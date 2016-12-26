@@ -19302,7 +19302,7 @@ game_Game.prototype = {
 	,messageList: null
 	,importantMessage: null
 	,init: function() {
-		this.log("Parasite v" + "0.2" + " (build: " + "20161226-2204" + ")");
+		this.log("Parasite v" + "0.2" + " (build: " + "20161226-2203" + ")");
 		haxe_Log.trace("TODO: " + "proper title screen",{ fileName : "Const.hx", lineNumber : 216, className : "Const", methodName : "todo"});
 		this.turns = 0;
 		this.turnsArea = 0;
@@ -34770,7 +34770,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 837185;
+	this.version = 540461;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
