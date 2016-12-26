@@ -3547,7 +3547,7 @@ var GameScene = function(g) {
 	this.game = g;
 	this.hudState = _$HUDState.HUDSTATE_DEFAULT;
 	this.controlPressed = false;
-	com_haxepunk_utils_Input.define("ctrl",[17]);
+	com_haxepunk_utils_Input.define("ctrl",[18]);
 	com_haxepunk_utils_Input.define("up",[38,87,104]);
 	com_haxepunk_utils_Input.define("down",[40,88,98]);
 	com_haxepunk_utils_Input.define("left",[37,65,100]);
@@ -3726,6 +3726,7 @@ GameScene.prototype = $extend(com_haxepunk_Scene.prototype,{
 		var timelinePressed = com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("action5")) && this.controlPressed || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("timelineWindow"));
 		var evolutionPressed = com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("action6")) && this.controlPressed || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("evolutionWindow"));
 		var organsPressed = com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("action7")) && this.controlPressed || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("organsWindow"));
+		var debugPressed = com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("action9")) && this.controlPressed || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("debugWindow"));
 		if(goalsPressed) this.setState(_$HUDState.HUDSTATE_GOALS); else if(inventoryPressed && this.game.player.state == _$PlayerState.PLR_STATE_HOST && this.game.player.host.isHuman && this.game.player.vars.inventoryEnabled) this.setState(_$HUDState.HUDSTATE_INVENTORY); else if(skillsPressed && this.game.player.vars.skillsEnabled) this.setState(_$HUDState.HUDSTATE_SKILLS); else if(logPressed) {
 			this.setState(_$HUDState.HUDSTATE_LOG);
 			this.windows.get(this.hudState).scrollToEnd();
@@ -3788,8 +3789,8 @@ GameScene.prototype = $extend(com_haxepunk_Scene.prototype,{
 			haxe_CallStack.lastException = e;
 			if (e instanceof js__$Boot_HaxeError) e = e.val;
 			var stack = haxe_CallStack.toString(haxe_CallStack.exceptionStack());
-			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 498, className : "GameScene", methodName : "update"});
-			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 499, className : "GameScene", methodName : "update"});
+			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 501, className : "GameScene", methodName : "update"});
+			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 502, className : "GameScene", methodName : "update"});
 			if(this.game.config.sendExceptions) {
 			} else {
 				this.game.finishText = "Something broke! An exception was thrown and save to exceptions.txt file. Unfortunately, the game cannot be continued. Sorry!\n\n" + "P.S. If you want to help the development, send the contents of the exceptions.txt file to starinfidel_at_gmail_dot_com. Thanks!";
@@ -16582,7 +16583,7 @@ entities_HUD.prototype = {
 	}
 	,updateHelp: function() {
 		var buf_b = "";
-		var prefix = "C-";
+		var prefix = "A-";
 		buf_b += Std.string(prefix + "1: Goals  ");
 		if(this.game.player.state == _$PlayerState.PLR_STATE_HOST) {
 			if(this.game.player.vars.inventoryEnabled) buf_b += Std.string(prefix + "2: Inventory  ");
@@ -19246,7 +19247,7 @@ game_Game.prototype = {
 	,messageList: null
 	,importantMessage: null
 	,init: function() {
-		this.log("Parasite v" + "0.2" + " (build: " + "20161226-229\n" + ")");
+		this.log("Parasite v" + "0.2" + " (build: " + "20161226-229" + ")");
 		haxe_Log.trace("TODO: " + "proper title screen",{ fileName : "Const.hx", lineNumber : 216, className : "Const", methodName : "todo"});
 		this.turns = 0;
 		this.turnsArea = 0;
@@ -34707,7 +34708,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 480241;
+	this.version = 408287;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
