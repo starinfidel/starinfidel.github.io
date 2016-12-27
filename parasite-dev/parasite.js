@@ -12,7 +12,7 @@ var ApplicationMain = function() { };
 $hxClasses["ApplicationMain"] = ApplicationMain;
 ApplicationMain.__name__ = ["ApplicationMain"];
 ApplicationMain.main = function() {
-	ApplicationMain.config = { build : "229", company : "", file : "parasite", fps : 0, name : "parasite", orientation : "", packageName : "org.parasite", version : "1.0.0", windows : [{ allowHighDPI : false, antialiasing : 0, background : 3355443, borderless : false, depthBuffer : false, display : 0, fullscreen : false, hardware : true, height : 0, hidden : null, maximized : null, minimized : null, parameters : "{}", resizable : false, stencilBuffer : true, title : "parasite", vsync : false, width : 0, x : null, y : null}]};
+	ApplicationMain.config = { build : "234", company : "", file : "parasite", fps : 0, name : "parasite", orientation : "", packageName : "org.parasite", version : "1.0.0", windows : [{ allowHighDPI : false, antialiasing : 0, background : 3355443, borderless : false, depthBuffer : false, display : 0, fullscreen : false, hardware : true, height : 0, hidden : null, maximized : null, minimized : null, parameters : "{}", resizable : false, stencilBuffer : true, title : "parasite", vsync : false, width : 0, x : null, y : null}]};
 };
 ApplicationMain.create = function() {
 	var app = new openfl_display_Application();
@@ -3547,7 +3547,9 @@ var GameScene = function(g) {
 	this.game = g;
 	this.hudState = _$HUDState.HUDSTATE_DEFAULT;
 	this.controlPressed = false;
+	this.shiftPressed = false;
 	com_haxepunk_utils_Input.define("ctrl",[18]);
+	com_haxepunk_utils_Input.define("shift",[16]);
 	com_haxepunk_utils_Input.define("up",[38,87,104]);
 	com_haxepunk_utils_Input.define("down",[40,88,98]);
 	com_haxepunk_utils_Input.define("left",[37,65,100]);
@@ -3597,6 +3599,7 @@ GameScene.prototype = $extend(com_haxepunk_Scene.prototype,{
 	,windows: null
 	,entityAtlas: null
 	,controlPressed: null
+	,shiftPressed: null
 	,_inputState: null
 	,begin: function() {
 		this.entityAtlas = new com_haxepunk_graphics_atlas_TileAtlas((function($this) {
@@ -3673,6 +3676,13 @@ GameScene.prototype = $extend(com_haxepunk_Scene.prototype,{
 			this.controlPressed = false;
 			return;
 		}
+		if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("shift"))) {
+			this.shiftPressed = true;
+			return;
+		} else if(com_haxepunk_utils_Input.released(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("shift"))) {
+			this.shiftPressed = false;
+			return;
+		}
 		if(!this.hud._consoleBack.get_visible()) {
 			if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromRight(32))) {
 				this.hud.show(false);
@@ -3686,7 +3696,7 @@ GameScene.prototype = $extend(com_haxepunk_Scene.prototype,{
 		if(!this.hud._consoleBack.get_visible()) {
 			var ret = this.handleWindows();
 			if(!ret) this.handleMovement();
-			this.handleActions();
+			if(!this.controlPressed) this.handleActions();
 		}
 		if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("exit"))) null;
 	}
@@ -3702,18 +3712,18 @@ GameScene.prototype = $extend(com_haxepunk_Scene.prototype,{
 		if(this.hudState == _$HUDState.HUDSTATE_FINISH && com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("closeWindow"))) null;
 		if(this.hudState != _$HUDState.HUDSTATE_DEFAULT) {
 			var lines = 0;
-			if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("up"))) lines = -1; else if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("down"))) lines = 1; else if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("pageup"))) lines = -20; else if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("pagedown"))) lines = 20;
+			if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("pageup")) || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromRight(75)) && this.shiftPressed) lines = -20; else if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("pagedown")) || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromRight(74)) && this.shiftPressed) lines = 20; else if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("up")) || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromRight(75))) lines = -1; else if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("down")) || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromRight(74))) lines = 1;
 			if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("left")) || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("right")) || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("upleft")) || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("upright")) || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("downleft")) || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("downright"))) return true;
 			if(lines != 0) {
 				this.windows.get(this.hudState).scroll(lines);
 				return true;
 			}
-			if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("home"))) {
-				this.windows.get(this.hudState).scrollToBegin();
+			if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("end")) || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromRight(71)) && this.shiftPressed) {
+				this.windows.get(this.hudState).scrollToEnd();
 				return true;
 			}
-			if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("end"))) {
-				this.windows.get(this.hudState).scrollToEnd();
+			if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("home")) || com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromRight(71))) {
+				this.windows.get(this.hudState).scrollToBegin();
 				return true;
 			}
 			if(com_haxepunk_utils_Input.pressed(com_haxepunk_utils__$Input_InputType_$Impl_$.fromLeft("enter")) && this.windows.get(this.hudState).exitByEnter) this.setState(_$HUDState.HUDSTATE_DEFAULT);
@@ -3789,8 +3799,8 @@ GameScene.prototype = $extend(com_haxepunk_Scene.prototype,{
 			haxe_CallStack.lastException = e;
 			if (e instanceof js__$Boot_HaxeError) e = e.val;
 			var stack = haxe_CallStack.toString(haxe_CallStack.exceptionStack());
-			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 501, className : "GameScene", methodName : "update"});
-			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 502, className : "GameScene", methodName : "update"});
+			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 522, className : "GameScene", methodName : "update"});
+			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 523, className : "GameScene", methodName : "update"});
 			if(this.game.config.sendExceptions) {
 			} else {
 				this.game.finishText = "Something broke! An exception was thrown and save to exceptions.txt file. Unfortunately, the game cannot be continued. Sorry!\n\n" + "P.S. If you want to help the development, send the contents of the exceptions.txt file to starinfidel_at_gmail_dot_com. Thanks!";
@@ -15689,18 +15699,24 @@ objects_AreaObject.prototype = {
 	,isStatic: null
 	,creationTime: null
 	,_listActions: null
+	,known: function() {
+		return Lambda.has(this.game.playerArea.knownObjects,this.type);
+	}
+	,getName: function() {
+		if(Lambda.has(this.game.playerArea.knownObjects,this.type)) return this.name; else return "unknown object";
+	}
 	,setDecay: function(turns) {
 		this.game.managerArea.addObject(this,_$AreaManagerEventType.AREAEVENT_OBJECT_DECAY,turns);
 	}
 	,createEntityByType: function(parentType) {
 		var atlasRow = Reflect.field(Const,"ROW_" + parentType.toUpperCase());
 		if(atlasRow == null) {
-			haxe_Log.trace("No such entity type: " + parentType,{ fileName : "AreaObject.hx", lineNumber : 61, className : "objects.AreaObject", methodName : "createEntityByType"});
+			haxe_Log.trace("No such entity type: " + parentType,{ fileName : "AreaObject.hx", lineNumber : 79, className : "objects.AreaObject", methodName : "createEntityByType"});
 			return;
 		}
 		var atlasCol = Reflect.field(Const,"FRAME_" + this.type.toUpperCase());
 		if(atlasCol == null) {
-			haxe_Log.trace("No such entity frame: " + this.type,{ fileName : "AreaObject.hx", lineNumber : 67, className : "objects.AreaObject", methodName : "createEntityByType"});
+			haxe_Log.trace("No such entity frame: " + this.type,{ fileName : "AreaObject.hx", lineNumber : 85, className : "objects.AreaObject", methodName : "createEntityByType"});
 			return;
 		}
 		this.entity = new entities_ObjectEntity(this,this.game,this.x,this.y,atlasRow,atlasCol);
@@ -17249,6 +17265,14 @@ game_AreaGame.prototype = {
 	,getObject: function(id) {
 		return this._objects.h[id];
 	}
+	,hasObjectAt: function(x,y) {
+		var $it0 = this._objects.iterator();
+		while( $it0.hasNext() ) {
+			var o = $it0.next();
+			if(o.x == x && o.y == y) return true;
+		}
+		return false;
+	}
 	,getObjectsAt: function(x,y) {
 		var tmp = new List();
 		var $it0 = this._objects.iterator();
@@ -17268,7 +17292,7 @@ game_AreaGame.prototype = {
 		while(true) {
 			cnt++;
 			if(cnt > 100) {
-				haxe_Log.trace("findUnseenEmptyLocation(): could not find empty spot (report this please)!",{ fileName : "AreaGame.hx", lineNumber : 370, className : "game.AreaGame", methodName : "findUnseenEmptyLocation"});
+				haxe_Log.trace("findUnseenEmptyLocation(): could not find empty spot (report this please)!",{ fileName : "AreaGame.hx", lineNumber : 381, className : "game.AreaGame", methodName : "findUnseenEmptyLocation"});
 				return { x : -1, y : -1};
 			}
 			var x = rect.x1 + Std.random(rect.x2);
@@ -17290,7 +17314,7 @@ game_AreaGame.prototype = {
 		while(true) {
 			cnt++;
 			if(cnt > 100) {
-				haxe_Log.trace("could not find empty spot!",{ fileName : "AreaGame.hx", lineNumber : 417, className : "game.AreaGame", methodName : "findEmptyLocation"});
+				haxe_Log.trace("could not find empty spot!",{ fileName : "AreaGame.hx", lineNumber : 428, className : "game.AreaGame", methodName : "findEmptyLocation"});
 				return { x : 0, y : 0};
 			}
 			x = Std.random(this.width);
@@ -17513,7 +17537,7 @@ game_AreaGame.prototype = {
 			var i = _g2++;
 			var loc = this.findUnseenEmptyLocation();
 			if(loc.x < 0) {
-				haxe_Log.trace("Area.turnSpawnClues(): no free spot for another " + info.id + ", please report",{ fileName : "AreaGame.hx", lineNumber : 780, className : "game.AreaGame", methodName : "turnSpawnClues"});
+				haxe_Log.trace("Area.turnSpawnClues(): no free spot for another " + info.id + ", please report",{ fileName : "AreaGame.hx", lineNumber : 791, className : "game.AreaGame", methodName : "turnSpawnClues"});
 				return;
 			}
 			var o1 = Type.createInstance(info.areaObjectClass,[this.game,loc.x,loc.y]);
@@ -17669,7 +17693,7 @@ game_AreaGame.prototype = {
 	,spawnUnseenAI: function(type,isCommon) {
 		var loc = this.findUnseenEmptyLocation();
 		if(loc.x < 0) {
-			haxe_Log.trace("Area.spawnUnseenAI(): no free spot for another " + type + ", please report",{ fileName : "AreaGame.hx", lineNumber : 951, className : "game.AreaGame", methodName : "spawnUnseenAI"});
+			haxe_Log.trace("Area.spawnUnseenAI(): no free spot for another " + type + ", please report",{ fileName : "AreaGame.hx", lineNumber : 962, className : "game.AreaGame", methodName : "spawnUnseenAI"});
 			return null;
 		}
 		var ai1 = null;
@@ -17742,7 +17766,7 @@ game_AreaGame.prototype = {
 			if(ok) tmp.push(i);
 		}
 		if(tmp.length == 0) {
-			haxe_Log.trace("ai at (" + x + "," + y + "): no dirs",{ fileName : "AreaGame.hx", lineNumber : 1069, className : "game.AreaGame", methodName : "getRandomDirection"});
+			haxe_Log.trace("ai at (" + x + "," + y + "): no dirs",{ fileName : "AreaGame.hx", lineNumber : 1080, className : "game.AreaGame", methodName : "getRandomDirection"});
 			return -1;
 		}
 		return tmp[Std.random(tmp.length)];
@@ -17787,7 +17811,7 @@ game_AreaGame.prototype = {
 		} catch( e ) {
 			haxe_CallStack.lastException = e;
 			if (e instanceof js__$Boot_HaxeError) e = e.val;
-			haxe_Log.trace(haxe_CallStack.toString(haxe_CallStack.exceptionStack()),{ fileName : "AreaGame.hx", lineNumber : 1131, className : "game.AreaGame", methodName : "getPath"});
+			haxe_Log.trace(haxe_CallStack.toString(haxe_CallStack.exceptionStack()),{ fileName : "AreaGame.hx", lineNumber : 1142, className : "game.AreaGame", methodName : "getPath"});
 		}
 		return null;
 	}
@@ -17798,7 +17822,7 @@ game_AreaGame.prototype = {
 		var $it0 = this._objects.iterator();
 		while( $it0.hasNext() ) {
 			var o = $it0.next();
-			haxe_Log.trace(o,{ fileName : "AreaGame.hx", lineNumber : 1147, className : "game.AreaGame", methodName : "debugShowObjects"});
+			haxe_Log.trace(o,{ fileName : "AreaGame.hx", lineNumber : 1158, className : "game.AreaGame", methodName : "debugShowObjects"});
 		}
 	}
 	,toString: function() {
@@ -18826,7 +18850,7 @@ var game_DebugArea = function(g) {
 		var $it1 = _g.game.area._objects.iterator();
 		while( $it1.hasNext() ) {
 			var o1 = $it1.next();
-			haxe_Log.trace(o1,{ fileName : "AreaGame.hx", lineNumber : 1147, className : "game.AreaGame", methodName : "debugShowObjects"});
+			haxe_Log.trace(o1,{ fileName : "AreaGame.hx", lineNumber : 1158, className : "game.AreaGame", methodName : "debugShowObjects"});
 		}
 	}},{ name : "Show area manager queue", func : function() {
 		_g.game.managerArea.debugShowQueue();
@@ -19247,7 +19271,7 @@ game_Game.prototype = {
 	,messageList: null
 	,importantMessage: null
 	,init: function() {
-		this.log("Parasite v" + "0.2" + " (build: " + "20161226-229" + ")");
+		this.log("Parasite v" + "0.2" + " (build: " + "20161227-234" + ")");
 		haxe_Log.trace("TODO: " + "proper title screen",{ fileName : "Const.hx", lineNumber : 216, className : "Const", methodName : "todo"});
 		this.turns = 0;
 		this.turnsArea = 0;
@@ -19466,6 +19490,10 @@ game_Habitat.prototype = {
 	,energyUsed: null
 	,evolutionBonus: null
 	,putBiomineral: function() {
+		if(this.game.area.hasObjectAt(this.player.host.x,this.player.host.y)) {
+			this.game.log("Not enough free space.",_$TextColor.COLOR_HINT);
+			return false;
+		}
 		this.game.goals.complete(_$Goal.GOAL_PUT_BIOMINERAL);
 		var ai = this.player.host;
 		var level = ai.organs.getLevel(_$Improv.IMP_BIOMINERAL);
@@ -19478,6 +19506,10 @@ game_Habitat.prototype = {
 		return true;
 	}
 	,putAssimilation: function() {
+		if(this.game.area.hasObjectAt(this.player.host.x,this.player.host.y)) {
+			this.game.log("Not enough free space.",_$TextColor.COLOR_HINT);
+			return false;
+		}
 		if(this.energyUsed >= this.energy) {
 			this.game.log("Not enough energy in habitat.",_$TextColor.COLOR_HINT);
 			return false;
@@ -20232,6 +20264,7 @@ var game_PlayerArea = function(g) {
 	this.knownObjects = new List();
 	this.knownObjects.add("body");
 	this.knownObjects.add("pickup");
+	this.knownObjects.add("habitat");
 	this.entity = new entities_PlayerEntity(this.game,this.x,this.y);
 	this.game.scene.add(this.entity);
 };
@@ -20270,6 +20303,9 @@ game_PlayerArea.prototype = {
 			}
 		}
 		this.ap = 2;
+	}
+	,knowsObject: function(id) {
+		return Lambda.has(this.knownObjects,id);
 	}
 	,addActionToList: function(list,id,o) {
 		var action = Const.PLAYER_ACTIONS.get(id);
@@ -20318,7 +20354,7 @@ game_PlayerArea.prototype = {
 					$r = _g_val;
 					return $r;
 				}(this));
-				if(this.get_state() == _$PlayerState.PLR_STATE_HOST && !Lambda.has(this.knownObjects,o.type) && this.player.host.isHuman && o.type != "event_object") this.addActionToList(tmp,"learnObject",o); else if(Lambda.has(this.knownObjects,o.type)) o.addActions(tmp);
+				if(this.get_state() == _$PlayerState.PLR_STATE_HOST && !Lambda.has(o.game.playerArea.knownObjects,o.type) && this.player.host.isHuman && o.type != "event_object") this.addActionToList(tmp,"learnObject",o); else if(Lambda.has(o.game.playerArea.knownObjects,o.type)) o.addActions(tmp);
 			}
 		}
 		var _g_head1 = olist.h;
@@ -20575,7 +20611,6 @@ game_PlayerArea.prototype = {
 		if(this.get_state() == _$PlayerState.PLR_STATE_ATTACHED) this.detachAction();
 		var nx = this.x + dx;
 		var ny = this.y + dy;
-		if(!this.game.area.isWalkable(nx,ny)) return false;
 		if(this.get_state() == _$PlayerState.PLR_STATE_HOST && this.player.hostControl < 90 && Std.random(100) < 0.75 * (100 - this.player.hostControl)) {
 			this.game.log("The host resists your command.",null);
 			var dir = this.game.area.getRandomDirection(this.x,this.y);
@@ -20583,21 +20618,38 @@ game_PlayerArea.prototype = {
 			nx = this.x + Const.dirx[dir];
 			ny = this.y + Const.diry[dir];
 		}
-		this.x = nx;
-		this.y = ny;
-		if(this.get_state() == _$PlayerState.PLR_STATE_HOST) this.player.host.setPosition(this.x,this.y);
-		this.entity.setPosition(this.x,this.y);
-		this.postAction();
-		this.game.area.updateVisibility();
+		this.moveTo(nx,ny,true);
 		return true;
 	}
-	,moveTo: function(nx,ny) {
+	,moveTo: function(nx,ny,doPost) {
+		if(doPost == null) doPost = false;
 		if(!this.game.area.isWalkable(nx,ny)) return false;
 		this.x = nx;
 		this.y = ny;
 		if(this.get_state() == _$PlayerState.PLR_STATE_HOST) this.player.host.setPosition(this.x,this.y);
 		this.entity.setPosition(this.x,this.y);
+		if(doPost) this.postAction();
 		this.game.area.updateVisibility();
+		var s = new StringBuf();
+		var cnt = 0;
+		var objs = this.game.area.getObjectsAt(this.x,this.y);
+		var _g_head = objs.h;
+		var _g_val = null;
+		while(_g_head != null) {
+			var o;
+			o = (function($this) {
+				var $r;
+				_g_val = _g_head[0];
+				_g_head = _g_head[1];
+				$r = _g_val;
+				return $r;
+			}(this));
+			cnt++;
+			s.add(o.getName());
+			if(cnt < objs.length) s.b += ", ";
+		}
+		if(s.b.length == 0) return true;
+		this.game.log("You can see " + (cnt > 1?"the following objects ":"an object ") + "here: " + s.b + ".");
 		return true;
 	}
 	,hears: function(xx,yy) {
@@ -34708,7 +34760,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 408287;
+	this.version = 465686;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -35246,21 +35298,33 @@ lime_utils_compress_Zlib.decompress = function(bytes) {
 	var data = pako.inflate(bytes.b.bufferValue);
 	return haxe_io_Bytes.ofData(data);
 };
-var objects_AssimilationCavity = function(g,vx,vy,l) {
+var objects_HabitatObject = function(g,vx,vy,l) {
 	objects_AreaObject.call(this,g,vx,vy);
 	this.type = "habitat";
-	this.name = "assimilation cavity";
 	this.isStatic = true;
 	this.level = l;
+};
+$hxClasses["objects.HabitatObject"] = objects_HabitatObject;
+objects_HabitatObject.__name__ = ["objects","HabitatObject"];
+objects_HabitatObject.__super__ = objects_AreaObject;
+objects_HabitatObject.prototype = $extend(objects_AreaObject.prototype,{
+	level: null
+	,getName: function() {
+		return this.name + " (level " + this.level + ")";
+	}
+	,__class__: objects_HabitatObject
+});
+var objects_AssimilationCavity = function(g,vx,vy,l) {
+	objects_HabitatObject.call(this,g,vx,vy,l);
+	this.name = "assimilation cavity";
 	this.entity = new entities_ObjectEntity(this,this.game,this.x,this.y,Const.ROW_ASSIMILATION,this.level);
 	this.game.scene.add(this.entity);
 };
 $hxClasses["objects.AssimilationCavity"] = objects_AssimilationCavity;
 objects_AssimilationCavity.__name__ = ["objects","AssimilationCavity"];
-objects_AssimilationCavity.__super__ = objects_AreaObject;
-objects_AssimilationCavity.prototype = $extend(objects_AreaObject.prototype,{
-	level: null
-	,updateActionsList: function() {
+objects_AssimilationCavity.__super__ = objects_HabitatObject;
+objects_AssimilationCavity.prototype = $extend(objects_HabitatObject.prototype,{
+	updateActionsList: function() {
 		if(this.game.player.state == _$PlayerState.PLR_STATE_HOST) {
 			if(this.game.player.energy >= 0) this._listActions.add({ id : "assimilate", type : _$PlayerActionType.ACTION_OBJECT, name : "Assimilate", energy : 0, obj : this});
 		}
@@ -35271,20 +35335,16 @@ objects_AssimilationCavity.prototype = $extend(objects_AreaObject.prototype,{
 	,__class__: objects_AssimilationCavity
 });
 var objects_Biomineral = function(g,vx,vy,l) {
-	objects_AreaObject.call(this,g,vx,vy);
-	this.type = "habitat";
+	objects_HabitatObject.call(this,g,vx,vy,l);
 	this.name = "biomineral";
-	this.isStatic = true;
-	this.level = l;
 	this.entity = new entities_ObjectEntity(this,this.game,this.x,this.y,Const.ROW_BIOMINERAL,this.level);
 	this.game.scene.add(this.entity);
 };
 $hxClasses["objects.Biomineral"] = objects_Biomineral;
 objects_Biomineral.__name__ = ["objects","Biomineral"];
-objects_Biomineral.__super__ = objects_AreaObject;
-objects_Biomineral.prototype = $extend(objects_AreaObject.prototype,{
-	level: null
-	,__class__: objects_Biomineral
+objects_Biomineral.__super__ = objects_HabitatObject;
+objects_Biomineral.prototype = $extend(objects_HabitatObject.prototype,{
+	__class__: objects_Biomineral
 });
 var objects_BodyObject = function(g,vx,vy,parentType) {
 	objects_AreaObject.call(this,g,vx,vy);
