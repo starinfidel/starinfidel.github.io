@@ -12,7 +12,7 @@ var ApplicationMain = function() { };
 $hxClasses["ApplicationMain"] = ApplicationMain;
 ApplicationMain.__name__ = ["ApplicationMain"];
 ApplicationMain.main = function() {
-	ApplicationMain.config = { build : "234", company : "", file : "parasite", fps : 0, name : "parasite", orientation : "", packageName : "org.parasite", version : "1.0.0", windows : [{ allowHighDPI : false, antialiasing : 0, background : 3355443, borderless : false, depthBuffer : false, display : 0, fullscreen : false, hardware : true, height : 0, hidden : null, maximized : null, minimized : null, parameters : "{}", resizable : false, stencilBuffer : true, title : "parasite", vsync : false, width : 0, x : null, y : null}]};
+	ApplicationMain.config = { build : "236", company : "", file : "parasite", fps : 0, name : "parasite", orientation : "", packageName : "org.parasite", version : "1.0.0", windows : [{ allowHighDPI : false, antialiasing : 0, background : 3355443, borderless : false, depthBuffer : false, display : 0, fullscreen : false, hardware : true, height : 0, hidden : null, maximized : null, minimized : null, parameters : "{}", resizable : false, stencilBuffer : true, title : "parasite", vsync : false, width : 0, x : null, y : null}]};
 };
 ApplicationMain.create = function() {
 	var app = new openfl_display_Application();
@@ -4546,10 +4546,13 @@ _$AIState.AI_STATE_DEAD.__enum__ = _$AIState;
 _$AIState.AI_STATE_POST_DETACH = ["AI_STATE_POST_DETACH",4];
 _$AIState.AI_STATE_POST_DETACH.toString = $estr;
 _$AIState.AI_STATE_POST_DETACH.__enum__ = _$AIState;
-var _$AITraitType = $hxClasses["_AITraitType"] = { __ename__ : ["_AITraitType"], __constructs__ : ["TRAIT_DRUG_ADDICT"] };
+var _$AITraitType = $hxClasses["_AITraitType"] = { __ename__ : ["_AITraitType"], __constructs__ : ["TRAIT_DRUG_ADDICT","TRAIT_ASSIMILATED"] };
 _$AITraitType.TRAIT_DRUG_ADDICT = ["TRAIT_DRUG_ADDICT",0];
 _$AITraitType.TRAIT_DRUG_ADDICT.toString = $estr;
 _$AITraitType.TRAIT_DRUG_ADDICT.__enum__ = _$AITraitType;
+_$AITraitType.TRAIT_ASSIMILATED = ["TRAIT_ASSIMILATED",1];
+_$AITraitType.TRAIT_ASSIMILATED.toString = $estr;
+_$AITraitType.TRAIT_ASSIMILATED.__enum__ = _$AITraitType;
 var _$AreaManagerEventType = $hxClasses["_AreaManagerEventType"] = { __ename__ : ["_AreaManagerEventType"], __constructs__ : ["AREAEVENT_CALL_LAW","AREAEVENT_ALERT_LAW","AREAEVENT_ARRIVE_LAW","AREAEVENT_CALL_BACKUP","AREAEVENT_ARRIVE_BACKUP","AREAEVENT_OBJECT_DECAY"] };
 _$AreaManagerEventType.AREAEVENT_CALL_LAW = ["AREAEVENT_CALL_LAW",0];
 _$AreaManagerEventType.AREAEVENT_CALL_LAW.toString = $estr;
@@ -4863,6 +4866,13 @@ _$WeaponType.WEAPON_KINETIC.__enum__ = _$WeaponType;
 var _$_$Math = function() { };
 $hxClasses["__Math"] = _$_$Math;
 _$_$Math.__name__ = ["__Math"];
+_$_$Math.hostEnergyPerTurn = function(time) {
+	var energy = 0;
+	if(Lambda.has(_$_$Math.game.player.host.traits,_$AITraitType.TRAIT_ASSIMILATED)) {
+		if(_$_$Math.game.location == _$LocationType.LOCATION_AREA && _$_$Math.game.area.isHabitat) energy = _$_$Math.game.area.habitat.hostEnergyRestored * time; else 1;
+	} else energy = -time;
+	return energy;
+};
 _$_$Math.gpPerTurn = function() {
 	var gp = _$_$Math.game.player.vars.organGrowthPointsPerTurn;
 	if(_$_$Math.game.location == _$LocationType.LOCATION_AREA && _$_$Math.game.area.isHabitat) gp = Math.round(gp * (100 + _$_$Math.game.area.habitat.evolutionBonus) / 100.0);
@@ -4874,7 +4884,7 @@ _$_$Math.growthEnergyPerTurn = function() {
 };
 _$_$Math.epPerTurn = function() {
 	var ep = 10;
-	if(_$_$Math.game.location == _$LocationType.LOCATION_AREA && _$_$Math.game.area.isHabitat) ep = Math.round(ep * (100 + _$_$Math.game.area.habitat.evolutionBonus) / 100.0);
+	if(_$_$Math.game.location == _$LocationType.LOCATION_AREA && _$_$Math.game.area.isHabitat && _$_$Math.game.area.habitat.energyUsed < _$_$Math.game.area.habitat.energy) ep = Math.round(ep * (100 + _$_$Math.game.area.habitat.evolutionBonus) / 100.0);
 	return ep;
 };
 _$_$Math.evolutionEnergyPerTurn = function() {
@@ -5443,7 +5453,7 @@ ai_AI.prototype = {
 		} else this.logicRunAwayFrom(this.game.playerArea.x,this.game.playerArea.y);
 	}
 	,stateHost: function() {
-		this.emitRandomSound("" + Std.string(_$AIState.AI_STATE_HOST),(100 - this.game.player.hostControl) / 3 | 0);
+		if(!Lambda.has(this.traits,_$AITraitType.TRAIT_ASSIMILATED)) this.emitRandomSound("" + Std.string(_$AIState.AI_STATE_HOST),(100 - this.game.player.hostControl) / 3 | 0);
 		if(this.effects.has(_$AIEffectType.EFFECT_CANNOT_TEAR_AWAY)) return;
 		if(this.game.player.hostControl < 25 && Std.random(100) < 5) {
 			this.game.log((this.isNameKnown?this.name.realCapped:this.name.unknownCapped) + " " + "manages to tear you away.");
@@ -5498,7 +5508,7 @@ ai_AI.prototype = {
 		if(this.effects.has(_$AIEffectType.EFFECT_SLIME)) this.effectSlime(); else if(this.effects.has(_$AIEffectType.EFFECT_PARALYSIS)) 1; else if(this.effects.has(_$AIEffectType.EFFECT_PANIC)) this.logicRunAwayFrom(this.game.playerArea.x,this.game.playerArea.y); else if(this.state == _$AIState.AI_STATE_IDLE) this.stateIdle(); else if(this.state == _$AIState.AI_STATE_ALERT) this.stateAlert(); else if(this.state == _$AIState.AI_STATE_HOST) this.stateHost(); else if(this.state == _$AIState.AI_STATE_POST_DETACH && this.stateTime >= 2) this.setState(_$AIState.AI_STATE_ALERT,ai__$AIStateChangeReason.REASON_DETACH);
 		this.updateEntity();
 		this.checkDespawn();
-		this.emitRandomSound("" + Std.string(this.state),20);
+		if(this.state != _$AIState.AI_STATE_HOST || !Lambda.has(this.traits,_$AITraitType.TRAIT_ASSIMILATED)) this.emitRandomSound("" + Std.string(this.state),20);
 	}
 	,emitRandomSound: function(key,chance) {
 		if(chance == null) chance = 100;
@@ -18676,6 +18686,12 @@ game_ConsoleGame.prototype = {
 				this.stage2();
 				this.stage21();
 				this.stage22();
+			} else if(stage == 23) {
+				this.stage1();
+				this.stage2();
+				this.stage21();
+				this.stage22();
+				this.stage23();
 			}
 		} else if(cmd.charAt(1) == "a") {
 			if(cmd.charAt(2) == "i") {
@@ -18734,9 +18750,31 @@ game_ConsoleGame.prototype = {
 	}
 	,stage22: function() {
 		this.game.playerRegion.action({ id : "enterHabitat", type : _$PlayerActionType.ACTION_REGION, name : "Enter habitat", energy : 0});
-		this.game.player.evolutionManager.addImprov(_$Improv.IMP_BIOMINERAL,1);
+		this.game.player.evolutionManager.addImprov(_$Improv.IMP_BIOMINERAL,2);
 		this.game.player.host.organs.action("set.IMP_BIOMINERAL");
 		this.game.player.host.organs.debugCompleteCurrent();
+		var o = this.game.player.host.organs.get(_$Improv.IMP_BIOMINERAL);
+		var a = o.info.action;
+		a.obj = o;
+		this.game.player.host.organs.areaAction(a);
+		var ai1 = new ai_CivilianAI(this.game,this.game.playerArea.x,this.game.playerArea.y);
+		this.game.area.addAI(ai1);
+		this.game.playerArea.debugAttachAndInvadeAction(ai1);
+		this.game.player.set_hostControl(100);
+	}
+	,stage23: function() {
+		this.game.player.evolutionManager.addImprov(_$Improv.IMP_ASSIMILATION,1);
+		this.game.player.host.organs.action("set.IMP_ASSIMILATION");
+		this.game.player.host.organs.debugCompleteCurrent();
+		this.game.playerArea.moveBy(1,0);
+		var o = this.game.player.host.organs.get(_$Improv.IMP_ASSIMILATION);
+		var a = o.info.action;
+		a.obj = o;
+		this.game.player.host.organs.areaAction(a);
+		var ai1 = new ai_CivilianAI(this.game,this.game.playerArea.x,this.game.playerArea.y);
+		this.game.area.addAI(ai1);
+		this.game.playerArea.debugAttachAndInvadeAction(ai1);
+		this.game.player.set_hostControl(100);
 	}
 	,__class__: game_ConsoleGame
 };
@@ -19271,7 +19309,7 @@ game_Game.prototype = {
 	,messageList: null
 	,importantMessage: null
 	,init: function() {
-		this.log("Parasite v" + "0.2" + " (build: " + "20161227-234" + ")");
+		this.log("Parasite v" + "0.2" + " (build: " + "20161229-236" + ")");
 		haxe_Log.trace("TODO: " + "proper title screen",{ fileName : "Const.hx", lineNumber : 216, className : "Const", methodName : "todo"});
 		this.turns = 0;
 		this.turnsArea = 0;
@@ -19478,6 +19516,7 @@ var game_Habitat = function(g,a) {
 	this.area = a;
 	this.energy = 0;
 	this.energyUsed = 0;
+	this.hostEnergyRestored = 0;
 	this.evolutionBonus = 0;
 };
 $hxClasses["game.Habitat"] = game_Habitat;
@@ -19488,6 +19527,7 @@ game_Habitat.prototype = {
 	,area: null
 	,energy: null
 	,energyUsed: null
+	,hostEnergyRestored: null
 	,evolutionBonus: null
 	,putBiomineral: function() {
 		if(this.game.area.hasObjectAt(this.player.host.x,this.player.host.y)) {
@@ -19528,6 +19568,7 @@ game_Habitat.prototype = {
 	,update: function() {
 		this.energy = 0;
 		this.energyUsed = 0;
+		this.hostEnergyRestored = 0;
 		this.evolutionBonus = 0;
 		var $it0 = this.area.getObjects();
 		while( $it0.hasNext() ) {
@@ -19536,9 +19577,13 @@ game_Habitat.prototype = {
 				var b = o;
 				var info = const_EvolutionConst.getParams(_$Improv.IMP_BIOMINERAL,b.level);
 				this.energy += info.energy;
-				if(info.evolutionBonus > this.evolutionBonus) this.evolutionBonus = info.evolutionBonus;
+				if(info.evolutionBonus > this.evolutionBonus) {
+					this.evolutionBonus = info.evolutionBonus;
+					this.hostEnergyRestored = info.hostEnergyRestored;
+				}
 			} else if(o.type == "habitat") this.energyUsed++;
 		}
+		if(this.energyUsed >= this.energy) this.hostEnergyRestored = 0;
 		Const.debugObject(this);
 	}
 	,__class__: game_Habitat
@@ -20214,10 +20259,9 @@ game_Player.prototype = {
 			}
 		}
 		if(this.state == _$PlayerState.PLR_STATE_HOST) {
-			if(this.game.location == _$LocationType.LOCATION_AREA && this.game.area.isHabitat) 1; else {
-				var _g2 = this.host;
-				_g2.set_energy(_g2.energy - time);
-			}
+			var delta = _$_$Math.hostEnergyPerTurn(time);
+			var _g2 = this.host;
+			_g2.set_energy(_g2.energy + delta);
 			if(this.host.energy <= 0) {
 				if(this.game.location == _$LocationType.LOCATION_AREA) this.game.playerArea.onHostDeath(); else if(this.game.location == _$LocationType.LOCATION_REGION) this.game.playerRegion.onHostDeath();
 				this.game.log("Your host has expired. You have to find a new one.",null);
@@ -34760,7 +34804,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 465686;
+	this.version = 272890;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -35325,12 +35369,14 @@ objects_AssimilationCavity.__name__ = ["objects","AssimilationCavity"];
 objects_AssimilationCavity.__super__ = objects_HabitatObject;
 objects_AssimilationCavity.prototype = $extend(objects_HabitatObject.prototype,{
 	updateActionsList: function() {
-		if(this.game.player.state == _$PlayerState.PLR_STATE_HOST) {
-			if(this.game.player.energy >= 0) this._listActions.add({ id : "assimilate", type : _$PlayerActionType.ACTION_OBJECT, name : "Assimilate", energy : 0, obj : this});
+		if(this.game.player.state == _$PlayerState.PLR_STATE_HOST && !Lambda.has(this.game.player.host.traits,_$AITraitType.TRAIT_ASSIMILATED)) {
+			if(this.game.player.energy >= 0) this._listActions.add({ id : "assimilate", type : _$PlayerActionType.ACTION_OBJECT, name : "Assimilate Host", energy : 0, obj : this});
 		}
 	}
 	,onAction: function(id) {
 		this.game.log("Twisting tendrils wrap around the host, starting the assimilation process.");
+		this.game.player.host.emitSound({ text : "*GASP*", radius : 5, alertness : 10});
+		this.game.player.host.addTrait(_$AITraitType.TRAIT_ASSIMILATED);
 	}
 	,__class__: objects_AssimilationCavity
 });
@@ -56755,15 +56801,15 @@ const_EvolutionConst.improvements = [{ path : _$Path.PATH_CONCEAL, id : _$Improv
 	return "Maximum number of microhabitats: " + l16.numHabitats + "\nMicrohabitat detection chance: " + l16.detectionChance + "%";
 }, levelNotes : ["(todo fluff)","(todo fluff)","(todo fluff)","(todo fluff)"], levelParams : [{ numHabitats : 0, detectionChance : 0},{ numHabitats : 1, detectionChance : 1},{ numHabitats : 2, detectionChance : 0.5},{ numHabitats : 4, detectionChance : 0.25}], onUpgrade : function(level4,game4,player5) {
 	if(level4 == 1) game4.goals.complete(_$Goal.GOAL_EVOLVE_MICROHABITAT);
-}},{ path : _$Path.PATH_SPECIAL, id : _$Improv.IMP_BIOMINERAL, name : "Biomineral formation", note : "Gives the player an ability to supply microhabitat with energy. Being near the formation increases the speed of organ growth and evolution.", noteFunc : function(l17) {
-	return "Energy units per formation: " + l17.energy + "\nBonus organ and evolution points: +" + l17.evolutionBonus + "%";
+}},{ path : _$Path.PATH_SPECIAL, id : _$Improv.IMP_BIOMINERAL, name : "Biomineral formation", note : "Gives the player an ability to supply microhabitat with energy. Unused biomineral energy increases the speed of organ growth and evolution and slowly restores the energy of assimilated hosts.", noteFunc : function(l17) {
+	return "Energy units per formation: " + l17.energy + "\nBonus organ and evolution points per turn: +" + l17.evolutionBonus + "%" + "\nHost energy restored per turn: +" + l17.energyRestored;
 }, levelNotes : ["(todo fluff)","(todo fluff)","(todo fluff)","(todo fluff)"], organ : { name : "Biomineral mold", note : "Mold for a biomineral formation. You can only grow that in a habitat. Host and its inventory will be destroyed.", gp : 200, action : { id : "formBiomineral", type : _$PlayerActionType.ACTION_ORGAN, name : "Produce biomineral formation", energy : 0}, onAction : function(game5,player6) {
 	if(!game5.area.isHabitat) {
 		game5.log("This action only works in habitat.",_$TextColor.COLOR_HINT);
 		return false;
 	}
 	return game5.area.habitat.putBiomineral();
-}}, levelParams : [{ energy : 0, evolutionBonus : 0},{ energy : 1, evolutionBonus : 10},{ energy : 2, evolutionBonus : 20},{ energy : 3, evolutionBonus : 25}]},{ path : _$Path.PATH_SPECIAL, id : _$Improv.IMP_ASSIMILATION, name : "Assimilation cavity", note : "Gives the player an ability to assimilate hosts", levelNotes : ["(todo fluff)","(todo fluff)","(todo fluff)","(todo fluff)"], organ : { name : "Assimilation mold", note : "Mold for an assimilation cavity. You can only grow that in a habitat. Host and its inventory will be destroyed.", gp : 200, action : { id : "formAssimilation", type : _$PlayerActionType.ACTION_ORGAN, name : "Form assimilation cavity", energy : 0}, onAction : function(game6,player7) {
+}}, levelParams : [{ energy : 0, hostEnergyRestored : 0, evolutionBonus : 0},{ energy : 1, hostEnergyRestored : 2, evolutionBonus : 10},{ energy : 2, hostEnergyRestored : 5, evolutionBonus : 20},{ energy : 3, hostEnergyRestored : 10, evolutionBonus : 25}]},{ path : _$Path.PATH_SPECIAL, id : _$Improv.IMP_ASSIMILATION, name : "Assimilation cavity", note : "Gives the player an ability to assimilate hosts. Assimilated hosts do not lose energy passively and regenerate it from biominerals.", levelNotes : ["(todo fluff)","(todo fluff)","(todo fluff)","(todo fluff)"], organ : { name : "Assimilation mold", note : "Mold for an assimilation cavity. You can only grow that in a habitat. Host and its inventory will be destroyed.", gp : 200, action : { id : "formAssimilation", type : _$PlayerActionType.ACTION_ORGAN, name : "Form assimilation cavity", energy : 0}, onAction : function(game6,player7) {
 	if(!game6.area.isHabitat) {
 		game6.log("Only works in habitat.",_$TextColor.COLOR_HINT);
 		return false;
@@ -56867,7 +56913,7 @@ const_NameConst.maleFirst = ["Aaron","Adam","Alan","Albert","Alex","Alexander","
 const_NameConst.femaleFirst = ["Alice","Alicia","Alma","Amanda","Amber","Amy","Ana","Andrea","Angela","Anita","Ann","Anna","Anne","Annette","Annie","April","Ashley","Audrey","Barbara","Beatrice","Bernice","Bertha","Beth","Betty","Beverly","Bonnie","Brenda","Brittany","Carmen","Carol","Carolyn","Carrie","Catherine","Cathy","Charlotte","Cheryl","Christina","Christine","Cindy","Clara","Connie","Crystal","Cynthia","Dana","Danielle","Darlene","Dawn","Debbie","Deborah","Debra","Denise","Diana","Diane","Dolores","Donna","Doris","Dorothy","Edith","Edna","Elaine","Eleanor","Elizabeth","Ellen","Elsie","Emily","Emma","Erica","Erin","Esther","Ethel","Eva","Evelyn","Florence","Frances","Gail","Geraldine","Gladys","Gloria","Grace","Hazel","Heather","Helen","Holly","Ida","Irene","Jacqueline","Jamie","Jane","Janet","Janice","Jean","Jeanette","Jeanne","Jennifer","Jessica","Jill","Joan","Joann","Joanne","Josephine","Joyce","Juanita","Judith","Judy","Julia","Julie","June","Karen","Katherine","Kathleen","Kathryn","Kathy","Katie","Kelly","Kim","Kimberly","Kristen","Laura","Lauren","Laurie","Leslie","Lillian","Linda","Lisa","Lois","Loretta","Lori","Lorraine","Louise","Lucille","Lynn","Margaret","Maria","Marie","Marilyn","Marion","Marjorie","Martha","Mary","Megan","Melanie","Melissa","Michele","Michelle","Mildred","Monica","Nancy","Nicole","Norma","Pamela","Patricia","Paula","Pauline","Peggy","Phyllis","Rachel","Rebecca","Regina","Renee","Rhonda","Rita","Roberta","Robin","Rosa","Rose","Ruby","Ruth","Sally","Samantha","Sandra","Sara","Sarah","Shannon","Sharon","Sheila","Sherry","Shirley","Stacy","Stephanie","Sue","Susan","Suzanne","Sylvia","Tammy","Teresa","Thelma","Theresa","Tiffany","Tina","Tracy","Valerie","Vanessa","Veronica","Victoria","Virginia","Vivian","Wanda","Wendy","Yolanda","Yvonne"];
 const_NameConst.last = ["Adams","Alexander","Allen","Anderson","Andrews","Armstrong","Arnold","Bailey","Baker","Barnes","Bell","Bennett","Berry","Bishop","Black","Boyd","Bradley","Brooks","Brown","Bryant","Burke","Burns","Butler","Campbell","Carlson","Carpenter","Carr","Carroll","Carter","Chapman","Clark","Cole","Coleman","Collins","Cook","Cooper","Cox","Crawford","Cunningham","Davidson","Davis","Day","Dean","Dixon","Duncan","Dunn","Edwards","Elliott","Ellis","Evans","Ferguson","Fisher","Ford","Foster","Fox","Freeman","Gardner","Gibson","Gilbert","Gordon","Graham","Gray","Green","Griffin","Hall","Hamilton","Hansen","Hanson","Harris","Harrison","Hart","Hayes","Henderson","Henry","Hicks","Hill","Hoffman","Holmes","Howard","Howell","Hudson","Hughes","Hunt","Hunter","Jackson","Jacobs","James","Jenkins","Jensen","Johnson","Johnston","Jones","Jordan","Keller","Kelley","Kelly","Kennedy","King","Knight","Lane","Larson","Lawrence","Lawson","Lee","Lewis","Long","Lynch","Marshall","Martin","Mason","May","Mcdonald","Meyer","Miller","Mills","Mitchell","Moore","Morgan","Morris","Morrison","Murphy","Murray","Myers","Nelson","Nichols","Obrien","Olson","Owens","Palmer","Parker","Patterson","Payne","Perkins","Perry","Peters","Peterson","Phillips","Pierce","Porter","Powell","Price","Ray","Reed","Reynolds","Rice","Richards","Richardson","Riley","Roberts","Robertson","Robinson","Rogers","Rose","Ross","Russell","Ryan","Sanders","Schmidt","Schneider","Schultz","Scott","Shaw","Simmons","Simpson","Smith","Snyder","Spencer","Stephens","Stevens","Stewart","Stone","Sullivan","Taylor","Thomas","Thompson","Tucker","Turner","Wagner","Walker","Wallace","Walsh","Walters","Ward","Warren","Watson","Weaver","Webb","Weber","Welch","Wells","West","Wheeler","White","Williams","Williamson","Wilson","Wood","Woods","Wright","Young"];
 const_SkillsConst.skills = [{ id : _$Skill.SKILL_FISTS, name : "fists", defaultLevel : 50},{ id : _$Skill.SKILL_BATON, name : "baton", defaultLevel : 40},{ id : _$Skill.SKILL_PISTOL, name : "pistol", defaultLevel : 20},{ id : _$Skill.SKILL_RIFLE, name : "rifle", defaultLevel : 25},{ id : _$Skill.SKILL_SHOTGUN, name : "shotgun", defaultLevel : 30},{ id : _$Skill.SKILL_COMPUTER, name : "computer use", defaultLevel : 0},{ id : _$Skill.KNOW_SMOKING, name : "smoking", defaultLevel : 0, isKnowledge : true, isBool : true},{ id : _$Skill.KNOW_SHOPPING, name : "shopping", defaultLevel : 0, isKnowledge : true, isBool : true},{ id : _$Skill.KNOW_SOCIETY, name : "human society", defaultLevel : 0, isKnowledge : true},{ id : _$Skill.KNOW_DOPAMINE, name : "dopamine regulation", defaultLevel : 0, isKnowledge : true, isBool : true},{ id : _$Skill.KNOW_HABITAT, name : "microhabitat", defaultLevel : 0, isKnowledge : true, isBool : true}];
-const_TraitsConst.traits = [{ id : _$AITraitType.TRAIT_DRUG_ADDICT, name : "drug addict", note : "Addicted to drugs."}];
+const_TraitsConst.traits = [{ id : _$AITraitType.TRAIT_DRUG_ADDICT, name : "drug addict", note : "Addicted to drugs."},{ id : _$AITraitType.TRAIT_ASSIMILATED, name : "assimilated", note : "Has been assimilated."}];
 const_WorldConst.areas = (function($this) {
 	var $r;
 	var _g = new haxe_ds_EnumValueMap();
