@@ -1,0 +1,76 @@
+<html>
+<head>
+<style>
+a { color:white; }
+.link { color:white; cursor:pointer; text-decoration:underline; }
+.menuitem { color:black; cursor:pointer; }
+.menuheader { color:black; font-weight:bold; }
+</style>
+<script type="text/javascript" src="lib/Action.js"></script>
+<script type="text/javascript" src="lib/HTML.js"></script>
+<script type="text/javascript" src="lib/Log.js"></script>
+<script type="text/javascript" src="lib/Menu.js"></script>
+<script type="text/javascript" src="lib/Inventory.js"></script>
+<script type="text/javascript" src="lib/Room.js"></script>
+<script type="text/javascript" src="lib/World.js"></script>
+<script type="text/javascript" src="lib/WorldObject.js"></script>
+<script type="text/javascript" src="game.js"></script>
+<title>IF test</title>
+</head>
+
+<body style='background:black; color:#00ff00; font-size:20px'>
+
+<h1>Interactive Fiction Test v0.2</h1>
+
+<div id="worldHTML" style='border:inset gray 2px; width:700; height:150'>
+</div>
+
+<br>
+
+<div id="menuHTML">
+&nbsp;&nbsp;&nbsp;&nbsp;
+<input type=submit onclick='inventory.paint(); return false;' value="Inventory">
+&nbsp;&nbsp;
+<input type=submit onclick='log.clear(); return false;' value="Clear">
+</div>
+<br>
+
+<div id="lastActionHTML" 
+  style='border:double white 4px; width:700; height:70; overflow:auto'>
+</div>
+<br>
+
+<div id="logHTML"
+  style='border:double white 4px; width:700; height:200; overflow:auto'>
+</div>
+
+<div id="actionsMenuHTML" style='position:absolute; visibility:hidden;'>
+</div>
+
+<script>
+world.repaint();
+log.repaint();
+</script>
+
+<p style="color:yellow;font-size:14">
+Tested in Firefox 3, Opera 9, IE 6. 
+</p>
+
+<p style='color:lightgray;font-size:14'>
+<a href='../index.html'>Back</a> -
+<a href='if-02-src.tar.gz'>Source Code</a> -
+You can reach me at <b>starinfidel_at_gmail_dot_com</b>.</p>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7261859-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+<br>
+</body>
+</html>

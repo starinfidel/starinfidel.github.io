@@ -1,0 +1,125 @@
+<html>
+<head>
+<script type="text/javascript" src="lib/HTML.js"></script>
+<script type="text/javascript" src="amoebaRL.js"></script>
+<title>amoebaRL</title>
+</head>
+
+<body style='background:black; color:#00ff00; font-size:20px;'>
+
+<h1 style='margin-bottom:0'>amoebaRL v0.2c</h1>
+
+<table cellspacing=5 width=1024>
+<tr>
+<td valign=top width=600>
+
+<div id="divScreen" 
+  style='border:double white 4px; width:600; height:400; overflow:none;'>
+</div>
+<br>
+<div id="divStatus" 
+  style='border:double white 4px; width:600; height:30; overflow:none'>
+</div>
+
+<table>
+<tr>
+<td>
+
+<div style='width:350px;color:lightgray;font-size:14'>
+<a href='../index.html'>Back</a> -
+<a href='amoebaRL-02c-src.tar.gz'>Source Code</a> -
+<b>Post comments and feedback <a target=_blank href='feedback.html'>here</a>.</b>
+</div>
+<td>
+<a href="http://flattr.com/thing/171532/amoebaRL" target="_blank">
+<img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" /></a>
+<td>
+<a href="http://twitter.com/share" class="twitter-share-button" data-count="none" data-via="starinfidel">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+<td>
+<iframe src="http://www.facebook.com/plugins/like.php?href=http%3A%2F%2Fstarinfidel.co.cc%2FamoebaRL%2F&amp;layout=button_count&amp;show_faces=false&amp;width=450&amp;action=like&amp;font&amp;colorscheme=dark&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:21px;" allowTransparency="true"></iframe>
+</table>
+
+<td valign=top style="margin-left:10">
+<p style="color:lightgray;font-size:14;">
+The goal of the game is to eat weaker amoebas while running away from stronger
+ones. When you eat a weaker amoeba you gain a level. If a stronger amoeba eats
+you, you die. You win by gaining level 10.
+<br><br><span style="color:white"><b>Controls: Arrow Keys or Numeric Keypad. SPACE - skip a turn.
+<br>(alternate controls: HJKLYUBN)<br>
+</b></span>
+<span style="color:yellow;font-size:14">
+Turn <b>OFF</b> NumLock in Opera. Turn <b>ON</b>
+NumLock in IE, Chromium.</span></p>
+
+<table>
+<tr><td valign=top>
+<p style='color:lightgray;font-size:14'>Keypad:<br><br>
+
+<table rules=all>
+<tr>
+<td>
+<button onclick="javascript:realHandleKeyPress(36)">\</button>
+<td>
+<button onclick="javascript:realHandleKeyPress(38)">^</button>
+<td>
+<button onclick="javascript:realHandleKeyPress(33)">/</button>
+<tr>
+<td>
+<button onclick="javascript:realHandleKeyPress(37)">&lt;</button>
+<td>
+<td>
+<button onclick="javascript:realHandleKeyPress(39)">&gt;</button>
+<tr>
+<td>
+<button onclick="javascript:realHandleKeyPress(35)">/</button>
+<td>
+<button onclick="javascript:realHandleKeyPress(40)">v</button>
+<td>
+<button onclick="javascript:realHandleKeyPress(34)">\</button>
+</table>
+
+<td>
+<p style="color:lightgray;font-size:14;">Map:</p>
+<ul style="color:lightgray;font-size:14;">
+<li><b>@</b> - you;
+<li><b style="color:#707070">*</b> - impassable stone;
+<li><b style="color:#00ff00">1</b> - <b style="color:#00ff00">9</b> - weak amoeba;
+<li><b style="color:white">1</b> - <b style="color:white">9</b> - equal amoeba;
+<li><b style="color:#ff0000">1</b> - <b style="color:#ff0000">9</b> - strong amoeba;
+<li><b style="color:cyan">~</b> - dead amoeba;
+</ul>
+</table>
+
+<p style="color:lightgray;font-size:14;">Important notes:</p>
+<ul style="color:lightgray;font-size:14;">
+<li>amoebas are stupid and can't walk around stones;
+<li>when eating weaker amoeba you gain a level;
+<li>when stronger amoeba chews you, you die;
+<li>you have a 66% chance of growing when eating amoeba of the same level;
+<li>amoebas of the same level kill each other;
+<li>amoebas of level 9 are always stronger than you;
+</ul>
+
+<p style="color:yellow;font-size:14">
+Tested in Firefox 3, Opera 9, IE 6, Chromium.
+</p>
+
+</table>
+
+<script>
+init();
+</script>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7261859-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+<br>
+</body>
+</html>

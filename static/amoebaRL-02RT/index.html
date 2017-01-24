@@ -1,0 +1,90 @@
+<html>
+<head>
+<script type="text/javascript" src="lib/HTML.js"></script>
+<script type="text/javascript" src="amoebaRL.js"></script>
+<title>amoebaRL</title>
+</head>
+
+<body style='background:black; color:#00ff00; font-size:20px'>
+
+<h1>amoebaRL v0.2 Real-Time</h1>
+
+<table cellspacing=5>
+<tr>
+<td valign=top>
+
+<div id="divScreen" 
+  style='border:double white 4px; width:600; height:400; overflow:none;'>
+</div>
+
+
+<td valign=top style="margin-left:10">
+<p style="color:lightgray;font-size:14;">Rules:</p>
+<p style="color:lightgray;font-size:14;">
+The goal of the game is to eat weaker amoebas while running away from stronger
+ones. When you eat a weaker amoeba you gain a level. If a stronger amoeba eats
+you, you die. You win by gaining level 10.
+<br><span style="color:white"><b>Controls: Arrow Keys or Numeric
+Keypad. SPACE - skip a turn.</b></span>
+</p>
+
+<p style="color:lightgray;font-size:14;">Map:</p>
+<ul style="color:lightgray;font-size:14;">
+<li><b>@</b> - you;
+<li><b style="color:#707070">*</b> - impassable stone;
+<li><b style="color:#00ff00">1</b> - <b style="color:#00ff00">9</b> - weak amoeba;
+<li><b style="color:white">1</b> - <b style="color:white">9</b> - equal amoeba;
+<li><b style="color:#ff0000">1</b> - <b style="color:#ff0000">9</b> - strong amoeba;
+<li><b style="color:cyan">~</b> - dead amoeba;
+
+</ul>
+
+<p style="color:lightgray;font-size:14;">Notes:</p>
+<ul style="color:lightgray;font-size:14;">
+<li>amoebas are stupid and can't walk around stones;
+<li>when eating weaker amoeba you gain a level;
+<li>when stronger amoeba chews you, you die;
+<li>you have a 66% chance of growing when eating amoeba of the same level;
+<li>amoebas of the same level kill each other;
+<li>amoebas of level 9 are always stronger than you;
+</ul>
+
+<tr>
+<td valign=top>
+<div id="divStatus" 
+  style='border:double white 4px; width:600; height:30; overflow:none'>
+</div>
+
+<td valign=top>
+<p style="color:yellow;font-size:14">
+Tested in Firefox 3, Opera 9, IE 6. <br>Turn <b>OFF</b> NumLock in Opera. Turn <b>ON</b>
+NumLock in IE.</p>
+
+<tr>
+<td>
+<p style='color:lightgray;font-size:14'>
+<a href='../index.html'>Back</a> -
+<a href='amoebaRT-02-src.tar.gz'>Source Code</a> -
+<b>Post comments and feedback <a target=_blank href='feedback.html'>here</a>.</b>
+</p>
+
+</table>
+
+<script>
+init();
+</script>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7261859-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+
+<br>
+</body>
+</html>
