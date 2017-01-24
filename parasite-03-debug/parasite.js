@@ -19403,7 +19403,7 @@ game_Game.prototype = {
 	,importantMessageQueue: null
 	,importantMessagesEnabled: null
 	,init: function() {
-		var s = "Parasite v" + "0.3" + " (build: " + "20170124-242" + ")";
+		var s = "Parasite v" + "0.3" + " (build: " + "20170125-242" + ")";
 		this.log(s);
 		this.turns = 0;
 		this.turnsArea = 0;
@@ -19418,16 +19418,15 @@ game_Game.prototype = {
 		this.debugRegion = new game_DebugRegion(this);
 		this.world = new game_World(this);
 		this.world.generate();
-		var region = this.world._list.h[0];
 		this.timeline = new scenario_Timeline(this);
 		this.goals = new game_Goals(this);
 		this.timeline.init();
 		this.message("You are alone. You are scared. You need to find a host or you will die soon.",null);
 		this.goals.receive(_$Goal.GOAL_INVADE_HOST);
-		region = this.world._list.h[0];
+		this.region = this.world._list.h[0];
 		var event = this.timeline.getStartEvent();
-		this.area = region.getRandomAround(event.location.area,{ isInhabited : true, minRadius : 2, maxRadius : 5, type : _$AreaType.AREA_CITY_LOW, canReturnNull : true});
-		if(this.area == null) this.area = region.getRandomAround(event.location.area,{ isInhabited : true, minRadius : 2, maxRadius : 5});
+		this.area = this.region.getRandomAround(event.location.area,{ isInhabited : true, minRadius : 2, maxRadius : 5, type : _$AreaType.AREA_CITY_LOW, canReturnNull : true});
+		if(this.area == null) this.area = this.region.getRandomAround(event.location.area,{ isInhabited : true, minRadius : 2, maxRadius : 5});
 		this.playerRegion.createEntity(this.area.x,this.area.y);
 		var _g1 = this.area.y - 1;
 		var _g = this.area.y + 2;
@@ -19437,7 +19436,7 @@ game_Game.prototype = {
 			var _g2 = this.area.x + 2;
 			while(_g3 < _g2) {
 				var xx = _g3++;
-				var aa = region.getXY(xx,yy);
+				var aa = this.region.getXY(xx,yy);
 				if(aa == null) continue;
 				aa.isKnown = true;
 			}
@@ -34941,7 +34940,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 393246;
+	this.version = 936325;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
