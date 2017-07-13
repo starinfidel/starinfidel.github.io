@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	
+
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	
+
 	<title>parasite</title>
-	
+
 	<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 	<meta name="apple-mobile-web-app-capable" content="yes">
-	
-	
+
+
 	<link rel="shortcut icon" type="image/png" href="./favicon.png">
-	
-	
+
+
 	<script type="text/javascript" src="./lib/howler.min.js"></script>
 	<script type="text/javascript" src="./lib/pako.min.js"></script>
 	<script type="text/javascript" src="./parasite.js"></script>
-	
+
 	<script>
 		window.addEventListener ("touchmove", function (event) { event.preventDefault (); }, false);
 		if (typeof window.devicePixelRatio != 'undefined' && window.devicePixelRatio > 2) {
@@ -25,11 +25,11 @@
 			meta.setAttribute ('content', 'width=device-width, initial-scale=' + (2 / window.devicePixelRatio) + ', user-scalable=no');
 		}
 	</script>
-	
+
 	<style>
 		html,body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
 		#openfl-content { background: #000000; width: 100%; height: 100%; }
-		
+
 		@font-face {
 			font-family: '04b03';
 			src: url('font/04B_03__.eot');
@@ -51,18 +51,18 @@
 			font-style: normal;
 		}
 	</style>
-	
+
 </head>
 <body>
-	
+
 	<noscript>This webpage makes extensive use of JavaScript. Please enable JavaScript in your web browser to view this page.</noscript>
-	
+
 	<div id="openfl-content"></div>
-	
+
 	<script type="text/javascript">
 		lime.embed ("openfl-content", 0, 0, "333333");
 	</script>
-	
+
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));

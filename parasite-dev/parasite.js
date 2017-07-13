@@ -12,7 +12,7 @@ var ApplicationMain = function() { };
 $hxClasses["ApplicationMain"] = ApplicationMain;
 ApplicationMain.__name__ = ["ApplicationMain"];
 ApplicationMain.main = function() {
-	ApplicationMain.config = { build : "325", company : "", file : "parasite", fps : 0, name : "parasite", orientation : "", packageName : "org.parasite", version : "0.3", windows : [{ allowHighDPI : false, antialiasing : 0, background : 3355443, borderless : false, depthBuffer : false, display : 0, fullscreen : false, hardware : true, height : 0, hidden : null, maximized : null, minimized : null, parameters : "{}", resizable : false, stencilBuffer : true, title : "parasite", vsync : false, width : 0, x : null, y : null}]};
+	ApplicationMain.config = { build : "328", company : "", file : "parasite", fps : 0, name : "parasite", orientation : "", packageName : "org.parasite", version : "0.3", windows : [{ allowHighDPI : false, antialiasing : 0, background : 3355443, borderless : false, depthBuffer : false, display : 0, fullscreen : false, hardware : true, height : 0, hidden : null, maximized : null, minimized : null, parameters : "{}", resizable : false, stencilBuffer : true, title : "parasite", vsync : false, width : 0, x : null, y : null}]};
 };
 ApplicationMain.create = function() {
 	var app = new openfl_display_Application();
@@ -3689,7 +3689,14 @@ var GameScene = function(g) {
 	this.cameraTileY1 = 0;
 	this.cameraTileX2 = 0;
 	this.cameraTileY2 = 0;
-	com_haxepunk_utils_Input.define("ctrl",[18]);
+	var os = window.navigator.platform;
+	if(os.indexOf("Linux") >= 0) {
+		this.controlKey = "ctrl";
+		com_haxepunk_utils_Input.define("ctrl",[17]);
+	} else {
+		this.controlKey = "alt";
+		com_haxepunk_utils_Input.define("ctrl",[18]);
+	}
 	com_haxepunk_utils_Input.define("shift",[16]);
 	com_haxepunk_utils_Input.define("up",[38,87,104]);
 	com_haxepunk_utils_Input.define("down",[40,88,98]);
@@ -3742,13 +3749,16 @@ GameScene.prototype = $extend(com_haxepunk_Scene.prototype,{
 	,uiLocked: null
 	,entityAtlas: null
 	,controlPressed: null
+	,controlKey: null
 	,shiftPressed: null
+	,loseFocus: null
 	,cameraTileX1: null
 	,cameraTileY1: null
 	,cameraTileX2: null
 	,cameraTileY2: null
 	,_inputState: null
 	,begin: function() {
+		var _g1 = this;
 		this.entityAtlas = new com_haxepunk_graphics_atlas_TileAtlas((function($this) {
 			var $r;
 			var data = com_haxepunk_graphics_atlas_AtlasData.getAtlasDataByName("gfx/entities.png",true);
@@ -3785,6 +3795,7 @@ GameScene.prototype = $extend(com_haxepunk_Scene.prototype,{
 		var value12 = new ui_Finish(this.game);
 		_g.set(_$UIState.UISTATE_FINISH,value12);
 		this.components = _g;
+		this.loseFocus = new ui_LoseFocus();
 		this.uiLocked = [_$UIState.UISTATE_DIFFICULTY,_$UIState.UISTATE_YESNO,_$UIState.UISTATE_DOCUMENT];
 		this.mouse = new ui_Mouse(this.game);
 		com_haxepunk_HXP.stage.addChild(this.mouse);
@@ -3796,6 +3807,12 @@ GameScene.prototype = $extend(com_haxepunk_Scene.prototype,{
 		ai_AI.VIEW_DISTANCE = (xmin < ymin?xmin:ymin) / 2.5 | 0;
 		ai_AI.HEAR_DISTANCE = (xmin < ymin?xmin:ymin) * 1.5 / 2.5 | 0;
 		this.game.info("AI view: " + ai_AI.VIEW_DISTANCE + ", AI hear: " + ai_AI.HEAR_DISTANCE);
+		window.onfocus = function() {
+			_g1.loseFocus.hide();
+		};
+		window.onblur = function() {
+			_g1.loseFocus.show();
+		};
 	}
 	,updateCamera: function() {
 		var x = 0.0;
@@ -3997,8 +4014,8 @@ GameScene.prototype = $extend(com_haxepunk_Scene.prototype,{
 			haxe_CallStack.lastException = e;
 			if (e instanceof js__$Boot_HaxeError) e = e.val;
 			var stack = haxe_CallStack.toString(haxe_CallStack.exceptionStack());
-			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 652, className : "GameScene", methodName : "update"});
-			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 653, className : "GameScene", methodName : "update"});
+			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 683, className : "GameScene", methodName : "update"});
+			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 684, className : "GameScene", methodName : "update"});
 			var finishText = "Something broke! Unfortunately, the game cannot be continued. Sorry!\n" + "<font size=\"12px\">Exception: " + Std.string(e) + "\n" + stack + "</font>\n" + "P.S. If you want to help the development, make a screenshot of this message and send it to starinfidel_at_gmail_dot_com. Thanks!";
 			this.uiQueue.add({ state : _$UIState.UISTATE_FINISH, obj : finishText});
 			this.closeWindow();
@@ -5322,7 +5339,13 @@ $hxClasses["__Math"] = _$_$Math;
 _$_$Math.__name__ = ["__Math"];
 _$_$Math.parasiteEnergyPerTurn = function(time) {
 	var energy = 0;
-	if(_$_$Math.game.location == _$LocationType.LOCATION_AREA && _$_$Math.game.area.isHabitat) energy = _$_$Math.game.area.habitat.parasiteEnergyRestored * time; else if(_$_$Math.game.location == _$LocationType.LOCATION_AREA) energy = -_$_$Math.game.player.vars.areaEnergyPerTurn; else if(_$_$Math.game.location == _$LocationType.LOCATION_REGION) energy = -_$_$Math.game.player.vars.regionEnergyPerTurn;
+	if(_$_$Math.game.player.state == _$PlayerState.PLR_STATE_HOST) energy = 10 * time; else if(_$_$Math.game.location == _$LocationType.LOCATION_AREA && _$_$Math.game.area.isHabitat) energy = _$_$Math.game.area.habitat.parasiteEnergyRestored * time; else if(_$_$Math.game.location == _$LocationType.LOCATION_AREA) energy = -_$_$Math.game.player.vars.areaEnergyPerTurn; else if(_$_$Math.game.location == _$LocationType.LOCATION_REGION) energy = -_$_$Math.game.player.vars.regionEnergyPerTurn;
+	return energy;
+};
+_$_$Math.fullHostEnergyPerTurn = function(time) {
+	var energy = _$_$Math.hostEnergyPerTurn(time);
+	if(_$_$Math.game.player.host.organs.get_isGrowing()) energy -= _$_$Math.growthEnergyPerTurn() * time;
+	if(_$_$Math.game.player.evolutionManager.isActive) energy -= (_$_$Math.game.location == _$LocationType.LOCATION_AREA && _$_$Math.game.area.isHabitat?_$_$Math.game.player.vars.evolutionEnergyPerTurnMicrohabitat:_$_$Math.game.player.vars.evolutionEnergyPerTurn) * time;
 	return energy;
 };
 _$_$Math.hostEnergyPerTurn = function(time) {
@@ -19282,8 +19305,9 @@ game_Game.prototype = {
 	,hudMessageList: null
 	,importantMessagesEnabled: null
 	,init: function() {
-		var s = "Parasite v" + "0.3" + " (build: " + "20170708-325" + ")";
+		var s = "Parasite v" + "0.4" + " (build: " + "20170713-328" + ")";
 		this.log(s);
+		this.log("<font size=\"10\">A high-pitched whirring sound produced by machinery may bring you into a placating mood.</font>",_$TextColor.COLOR_DEBUG);
 		this.turns = 0;
 		this.isFinished = false;
 		this.isInited = false;
@@ -19937,6 +19961,7 @@ $hxClasses["game.Organs"] = game_Organs;
 game_Organs.__name__ = ["game","Organs"];
 game_Organs.prototype = {
 	game: null
+	,isGrowing: null
 	,_ai: null
 	,_list: null
 	,currentOrgan: null
@@ -20150,7 +20175,7 @@ game_Organs.prototype = {
 	,addID: function(id) {
 		var impInfo = const_EvolutionConst.getInfo(id);
 		if(impInfo == null) {
-			haxe_Log.trace("No such organ: " + Std.string(id),{ fileName : "Organs.hx", lineNumber : 277, className : "game.Organs", methodName : "addID"});
+			haxe_Log.trace("No such organ: " + Std.string(id),{ fileName : "Organs.hx", lineNumber : 278, className : "game.Organs", methodName : "addID"});
 			return null;
 		}
 		var o = { id : id, level : this.game.player.evolutionManager.getLevel(impInfo.id), isActive : true, gp : 0, improvInfo : impInfo, info : impInfo.organ, params : impInfo.levelParams[0], timeout : 0};
@@ -20351,10 +20376,14 @@ game_Organs.prototype = {
 	,getGrowInfo: function() {
 		if(this.currentOrgan == null) return "<font color='#FF0000'>None</font>"; else return this.currentOrgan.info.name;
 	}
+	,get_isGrowing: function() {
+		return this.currentOrgan != null;
+	}
 	,onDamage: function(damage) {
 		this.woundRegenTurn = 0;
 	}
 	,__class__: game_Organs
+	,__properties__: {get_isGrowing:"get_isGrowing"}
 };
 var game_Player = function(g) {
 	this.game = g;
@@ -20412,8 +20441,9 @@ game_Player.prototype = {
 			}
 		}
 		if(this.state == _$PlayerState.PLR_STATE_HOST) {
+			var delta2 = _$_$Math.parasiteEnergyPerTurn(time);
 			var _g3 = this;
-			_g3.set_energy(_g3.energy + 10 * time);
+			_g3.set_energy(_g3.energy + delta2);
 			this.host.organs.turn(time);
 			if(this.host.type == "human" && this.evolutionManager.getLevel(_$Improv.IMP_BRAIN_PROBE) > 0) this.skills.increase(_$Skill.KNOW_SOCIETY,0.1 * this.host.get_intellect() * time);
 			this.evolutionManager.turn(time);
@@ -54503,7 +54533,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 687350;
+	this.version = 134261;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = ["lime","utils","AssetCache"];
@@ -75501,7 +75531,11 @@ ui_HUD.prototype = {
 		if(this.game.location == _$LocationType.LOCATION_AREA) buf.b += Std.string(this.game.playerArea.x + "," + this.game.playerArea.y + ")" + "\nActions: " + this.game.playerArea.ap + "\n"); else if(this.game.location == _$LocationType.LOCATION_REGION) buf.add(this.game.playerRegion.x + "," + this.game.playerRegion.y + ")" + "\n" + this.game.playerRegion.get_currentArea().name + "\n");
 		buf.b += "===\n";
 		var colEnergy = this.getTextColor(this.game.player.energy,this.game.player.maxEnergy);
-		buf.b += Std.string("Energy: " + "<font color='" + colEnergy + "'>" + this.game.player.energy + "</font>" + "/" + this.game.player.maxEnergy + "\n");
+		var time;
+		if(this.game.location == _$LocationType.LOCATION_AREA) time = 1; else time = 5;
+		var energyPerTurn = _$_$Math.parasiteEnergyPerTurn(time);
+		buf.b += Std.string("Energy: " + "<font color='" + colEnergy + "'>" + this.game.player.energy + "</font>" + "/" + this.game.player.maxEnergy);
+		buf.b += Std.string(" [" + (energyPerTurn > 0?"+":"") + energyPerTurn + "/t]\n");
 		var colHealth = this.getTextColor(this.game.player.health,this.game.player.maxHealth);
 		buf.b += Std.string("Health: " + "<font color='" + colHealth + "'>" + this.game.player.health + "</font>" + "/" + this.game.player.maxHealth + "\n");
 		buf.b += "===\n";
@@ -75514,7 +75548,9 @@ ui_HUD.prototype = {
 			var colControl = this.getTextColor(this.game.player.hostControl,100);
 			buf.b += Std.string("Control: " + "<font color='" + colControl + "'>" + this.game.player.hostControl + "</font>" + "/100\n");
 			var colEnergy1 = this.getTextColor(this.game.player.host.energy,this.game.player.host.maxEnergy);
-			buf.b += Std.string("Energy: <font color='" + colEnergy1 + "'>" + this.game.player.host.energy + "</font>/" + this.game.player.host.maxEnergy + "\n");
+			var energyPerTurn1 = _$_$Math.fullHostEnergyPerTurn(time);
+			buf.b += Std.string("Energy: <font color='" + colEnergy1 + "'>" + this.game.player.host.energy + "</font>/" + this.game.player.host.maxEnergy);
+			buf.b += Std.string(" [" + (energyPerTurn1 > 0?"+":"") + energyPerTurn1 + "/t]\n");
 			buf.b += "Evolution direction:\n  ";
 			buf.add(this.game.player.evolutionManager.getEvolutionDirectionInfo());
 			buf.b += "\n";
@@ -75587,7 +75623,8 @@ ui_HUD.prototype = {
 	}
 	,updateHelp: function() {
 		var buf_b = "";
-		var prefix = "A-";
+		var prefix;
+		if(this.game.scene.controlKey == "alt") prefix = "A-"; else prefix = "C-";
 		buf_b += Std.string(prefix + "1: Goals  ");
 		if(this.game.player.state == _$PlayerState.PLR_STATE_HOST) {
 			if(this.game.player.vars.inventoryEnabled) buf_b += Std.string(prefix + "2: Inventory  ");
@@ -75702,6 +75739,42 @@ ui_Log.prototype = $extend(ui_Text.prototype,{
 	}
 	,__class__: ui_Log
 });
+var ui_LoseFocus = function() {
+	var font = openfl_Assets.getFont(Const.FONT);
+	this._textField = new openfl_text_TextField();
+	this._textField.set_wordWrap(true);
+	this._textField.set_width(com_haxepunk_HXP.width);
+	this._textField.set_height(com_haxepunk_HXP.height);
+	var textFormat = new openfl_text_TextFormat(font.name,30,16777215);
+	textFormat.align = 0;
+	this._textField.set_defaultTextFormat(textFormat);
+	this._textField.set_htmlText("<center>LOST WINDOW FOCUS</center>");
+	this._textField.set_y(com_haxepunk_HXP.height / 2);
+	this._back = new openfl_display_Sprite();
+	this._back.addChild(this._textField);
+	this._back.set_x(0);
+	this._back.set_y(0);
+	this._back.set_width(com_haxepunk_HXP.width);
+	this._back.set_height(com_haxepunk_HXP.height);
+	this._back.get_graphics().clear();
+	this._back.get_graphics().beginFill(2105376,.95);
+	this._back.get_graphics().drawRect(0,0,this._textField.get_width(),this._textField.get_height());
+	this._back.set_visible(false);
+	com_haxepunk_HXP.stage.addChild(this._back);
+};
+$hxClasses["ui.LoseFocus"] = ui_LoseFocus;
+ui_LoseFocus.__name__ = ["ui","LoseFocus"];
+ui_LoseFocus.prototype = {
+	_textField: null
+	,_back: null
+	,show: function() {
+		this._back.set_visible(true);
+	}
+	,hide: function() {
+		this._back.set_visible(false);
+	}
+	,__class__: ui_LoseFocus
+};
 var ui_Message = function(g) {
 	ui_UIWindow.call(this,g);
 	haxe_ui_Toolkit.styleSheet.addRules("\n#main {\n  background-color: #111111;\n  border: 1px solid #CCCCCC;\n  padding: 10px;\n}\n\n#text {\n  width: 90%;\n  height: 100%;\n  horizontal-align: center;\n  font-size: 24px;\n  color: #888888;\n  border: none;\n  background-color: #111111;\n}\n\n.button {\n  font-size: 20px;\n  width: 150px;\n}\n");
