@@ -3082,9 +3082,10 @@ Music.prototype = {
 		SoundManager.togglePause("music");
 	}
 	,stop: function() {
-		SoundManager.stop("music");
+		SoundManager.stopAll();
 	}
 	,play: function() {
+		SoundManager.stopAll();
 		if(this.trackID == -1) this.random(); else SoundManager.play("music",{ onfinish : $bind(this,this.random)});
 	}
 	,onRandom: function() {
