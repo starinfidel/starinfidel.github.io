@@ -4670,15 +4670,30 @@ UINode.prototype = {
 	,paintAdvanced: function(ctx) {
 		if(!this.node.visibility[this.game.player.id]) return;
 		if(this.node.x < this.ui.map.viewRect.x - 20 || this.node.y < this.ui.map.viewRect.y - 20 || this.node.x > this.ui.map.viewRect.x + this.ui.map.viewRect.w || this.node.y > this.ui.map.viewRect.y + this.ui.map.viewRect.h) return;
-		if(this.node.owner != this.game.player) {
-			var ch = this.game.player.getGainChance(this.node);
-			this.ui.map.paintText(ctx,[ch / 10 | 0,ch % 10,10],0,this.tempx + this.tempd + 1,this.tempy - 11);
+		var productionIndicatorWidth = 6;
+		var productionIndicatorHeight = 2;
+		if(this.node.isGenerator && !this.node.isTempGenerator) {
 			if(this.node.owner == null || this.node.isKnown[this.game.player.id]) {
 				var _g1 = 0;
 				var _g = Game.numPowers;
 				while(_g1 < _g) {
 					var i = _g1++;
-					if(this.node.power[i] > 0) this.ui.map.paintText(ctx,[this.node.power[i]],i + 1,this.tempd + this.tempx + i * 6,this.tempy + this.temph + 3); else this.ui.map.paintText(ctx,[10],i + 1,this.tempd + this.tempx + i * 6,this.tempy + this.temph + 3);
+					if(this.node.powerGenerated[i] > 0) {
+						ctx.fillStyle = UI.powerColors[i];
+						ctx.fillRect(this.tempx + (this.tempd - 1) + i * (productionIndicatorWidth + 1),this.tempy - productionIndicatorHeight,productionIndicatorWidth,productionIndicatorHeight);
+					}
+				}
+			}
+		}
+		if(this.node.owner != this.game.player) {
+			var ch = this.game.player.getGainChance(this.node);
+			this.ui.map.paintText(ctx,[ch / 10 | 0,ch % 10,10],0,this.tempx + this.tempd + 1,this.tempy - 11);
+			if(this.node.owner == null || this.node.isKnown[this.game.player.id]) {
+				var _g11 = 0;
+				var _g2 = Game.numPowers;
+				while(_g11 < _g2) {
+					var i1 = _g11++;
+					if(this.node.power[i1] > 0) this.ui.map.paintText(ctx,[this.node.power[i1]],i1 + 1,this.tempd + this.tempx + i1 * 6,this.tempy + this.temph + 3); else this.ui.map.paintText(ctx,[10],i1 + 1,this.tempd + this.tempx + i1 * 6,this.tempy + this.temph + 3);
 				}
 			}
 		}
