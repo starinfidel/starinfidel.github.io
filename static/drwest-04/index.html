@@ -1,0 +1,171 @@
+<html>
+<head>
+<link rel="icon" type="image/png" href="./favicon.png" />
+<title>Dr. West</title>
+<style>
+body 
+{
+  background: black;
+  color: #d3d3d3;
+  font-size: 20px;
+  font-family: Verdana;
+}
+
+#map
+{
+  border: double;
+}
+
+#tip
+{
+  border: double;
+  width: 200;
+  height: 26;
+  padding-top: 5px;
+  margin-bottom: 10px;
+  padding-left: 5px;
+  text-align: center;
+}
+
+#msg
+{
+  border: double;
+  width: 500;
+  height: 26;
+  padding-top: 5px;
+  margin-bottom: 10px;
+  padding-left: 5px;
+}
+
+#status
+{
+  border: double;
+  width: 855;
+  height: 26;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding-left: 5px;
+}
+
+#name
+{
+  background: #222;
+  font-size: 18px;
+//  position: absolute;
+//  left: 780;
+//  top: 12;
+  margin-top: 7;
+  margin-right: 10px;
+}
+
+#restart
+{
+  font-size: 18px;
+//  position: absolute;
+//  left: 920;
+//  top: 12;
+  margin-top: 5;
+  cursor: pointer;
+  background: #222;
+  border: 1px solid #777;
+  padding-left: 3px;
+  width: 94;
+  height: 25;
+}
+
+#endTurn
+{
+  font-size: 18px;
+  margin-top: 12;
+  cursor: pointer;
+  background: #222;
+  border: 1px solid #777;
+  padding-left: 3px;
+  width: 110;
+  height: 25;
+}
+
+</style>
+</head>
+<body>
+<table>
+<tr>
+<td>
+
+<table width=1000>
+<tr>
+<td valign=top><div id="name">Dr. West <span id="version"></span></div>
+<td halign=left><div id="tip"></div>
+<td halign=left><div id="msg"></div>
+<td valign=top><div id="restart">RESTART</div>
+</table>
+
+<canvas id="map" width=1000 height=650></canvas>
+
+<table width=1000>
+<tr>
+<td valign=top><div id="status"></div>
+<td valign=top><div id="endTurn">END TURN</div>
+</table>
+
+<td valign=top>
+<div id="haxe:trace"
+  style="font-size:10px; color:green"><br></div>
+</table>
+
+<p style='text-align:center; width:1000; color:lightgray; font-size:12'>
+<a href='../index.html'>Back</a> -
+<a target=_blank href='https://github.com/infidel-/drwest'>Github</a> -
+<a target=_blank href='https://github.com/infidel-/drwest/blob/wiki/Manual.md'>Manual</a> -
+Tested in Firefox, Chromium, Opera, Edge.
+<b>Post comments and feedback <a target=_blank href='feedback.html'>here</a>.</b>
+</p>
+
+<h3>Useful hints</h3>
+<table style='width:1024px'>
+<tr>
+<td valign=top halign=center>
+<ul style='font-size: 14px'>
+<li>Move mouse over any tile to get information about it
+<li>Press SPACE or E key to end turn
+<li>Bodies will spawn on cemetery
+<li>Clicking on a body will move into the laboratory
+<li>The lighter the color of the body the greater its quality
+<li>Bodies in the laboratory will be reanimated on the next turn
+<li>Reanimation can lead to raising Theory parameter
+<li>Raising Theory up to 10 wins the game
+<li>Clicking on an empty space will put a marker there
+<li>The reanimated are attracted to the markers if they are in range
+</ul>
+
+<td valign=top halign=center>
+<ul style='font-size: 14px'>
+<li>When humans witness the death of another human, they will call the police
+<li>When no more reanimated are around, the police will leave the scene
+<li>No more than 10 police officers can be on the map at the same time
+<li>If the police gets too close to the laboratory, its Suspicion will rise
+<li>When Suspicion rises to 3, the game ends with a loss
+<li>When the reanimated are aggressive:
+  <ul><li>they sometimes attack each other
+      <li>they better hit the police officers
+      <li>they can enter the police station to wreak havoc
+  </ul>
+</ul>
+
+</table>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-7261859-1");
+pageTracker._trackPageview();
+} catch(err) {}
+</script>
+<script src="lib/HTML.js"></script>
+<script type="text/javascript" src="drwest.js"></script>
+
+</body>
+</html>
