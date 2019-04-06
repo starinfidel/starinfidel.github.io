@@ -2827,8 +2827,8 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 			haxe_CallStack.lastException = e;
 			if (e instanceof js__$Boot_HaxeError) e = e.val;
 			var stack = haxe_CallStack.toString(haxe_CallStack.exceptionStack());
-			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 683, className : "GameScene", methodName : "onEvent"});
-			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 684, className : "GameScene", methodName : "onEvent"});
+			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 681, className : "GameScene", methodName : "onEvent"});
+			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 682, className : "GameScene", methodName : "onEvent"});
 		}
 	}
 	,__class__: GameScene
@@ -9751,7 +9751,7 @@ game_AreaGame.prototype = {
 		this.isEntering = false;
 		this.game.scene.area.show();
 		if(this.game.player.state == _$PlayerState.PLR_STATE_PARASITE && !this.isHabitat) {
-			var spot = this.findEmptyLocationNear(this.game.playerArea.x,this.game.playerArea.y);
+			var spot = this.findEmptyLocationNear(this.game.playerArea.x,this.game.playerArea.y,3);
 			var ai1 = new ai_DogAI(this.game,spot.x,spot.y);
 			ai1.isCommon = true;
 			this.addAI(ai1);
@@ -9939,13 +9939,19 @@ game_AreaGame.prototype = {
 		}
 		return { x : x, y : y};
 	}
-	,findLocation: function(params) {
+	,findLocation: function(params,level) {
+		if(level == null) {
+			level = 0;
+		}
 		if(params.near == null) {
 			haxe_Log.trace("TODO: " + "findLocation near == null",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
 			return null;
 		}
 		if(params.radius == null) {
 			params.radius = 3;
+		}
+		if(params.canIncrease == null) {
+			params.canIncrease = true;
 		}
 		var xo = params.near.x;
 		var yo = params.near.y;
@@ -9969,25 +9975,35 @@ game_AreaGame.prototype = {
 			}
 		}
 		if(tmp.length == 0) {
-			return null;
+			if(level == 0 && params.canIncrease) {
+				params.radius *= 2;
+				return this.findLocation(params,1);
+			}
 		}
 		return tmp[Std.random(tmp.length)];
 	}
-	,findEmptyLocationNear: function(xo,yo) {
+	,findEmptyLocationNear: function(xo,yo,radius,level) {
+		if(level == null) {
+			level = 0;
+		}
 		var tmp = [];
-		var _g = -3;
-		while(_g < 3) {
-			var dy = _g++;
-			var _g1 = -3;
-			while(_g1 < 3) {
-				var dx = _g1++;
+		var _g1 = -radius;
+		var _g = radius;
+		while(_g1 < _g) {
+			var dy = _g1++;
+			var _g3 = -radius;
+			var _g2 = radius;
+			while(_g3 < _g2) {
+				var dx = _g3++;
 				if(this.isWalkable(xo + dx,yo + dy) && this.getAI(xo + dx,yo + dy) == null && !(this.game.playerArea.x == xo + dx && this.game.playerArea.y == yo + dy)) {
 					tmp.push({ x : xo + dx, y : yo + dy});
 				}
 			}
 		}
 		if(tmp.length == 0) {
-			return null;
+			if(level == 0) {
+				return this.findEmptyLocationNear(xo,yo,radius * 2,1);
+			}
 		}
 		return tmp[Std.random(tmp.length)];
 	}
@@ -10237,7 +10253,7 @@ game_AreaGame.prototype = {
 			var i = _g11++;
 			var loc = this.findUnseenEmptyLocation();
 			if(loc.x < 0) {
-				haxe_Log.trace("Area.turnSpawnClues(): no free spot for another " + info.id + ", please report",{ fileName : "AreaGame.hx", lineNumber : 835, className : "game.AreaGame", methodName : "turnSpawnClues"});
+				haxe_Log.trace("Area.turnSpawnClues(): no free spot for another " + info.id + ", please report",{ fileName : "AreaGame.hx", lineNumber : 849, className : "game.AreaGame", methodName : "turnSpawnClues"});
 				return;
 			}
 			var o2 = Type.createInstance(info.areaObjectClass,[this.game,loc.x,loc.y]);
@@ -10410,7 +10426,7 @@ game_AreaGame.prototype = {
 	,spawnUnseenAI: function(type,isCommon) {
 		var loc = this.findUnseenEmptyLocation();
 		if(loc.x < 0) {
-			haxe_Log.trace("Area.spawnUnseenAI(): no free spot for another " + type + ", please report",{ fileName : "AreaGame.hx", lineNumber : 1037, className : "game.AreaGame", methodName : "spawnUnseenAI"});
+			haxe_Log.trace("Area.spawnUnseenAI(): no free spot for another " + type + ", please report",{ fileName : "AreaGame.hx", lineNumber : 1051, className : "game.AreaGame", methodName : "spawnUnseenAI"});
 			return null;
 		}
 		var ai1 = null;
@@ -10546,7 +10562,7 @@ game_AreaGame.prototype = {
 			}
 		}
 		if(tmp.length == 0) {
-			haxe_Log.trace("ai at (" + x + "," + y + "): no dirs",{ fileName : "AreaGame.hx", lineNumber : 1175, className : "game.AreaGame", methodName : "getRandomDirection"});
+			haxe_Log.trace("ai at (" + x + "," + y + "): no dirs",{ fileName : "AreaGame.hx", lineNumber : 1189, className : "game.AreaGame", methodName : "getRandomDirection"});
 			return -1;
 		}
 		return tmp[Std.random(tmp.length)];
@@ -10614,7 +10630,7 @@ game_AreaGame.prototype = {
 			return p;
 		} catch( e ) {
 			haxe_CallStack.lastException = e;
-			haxe_Log.trace(haxe_CallStack.toString(haxe_CallStack.exceptionStack()),{ fileName : "AreaGame.hx", lineNumber : 1237, className : "game.AreaGame", methodName : "getPath"});
+			haxe_Log.trace(haxe_CallStack.toString(haxe_CallStack.exceptionStack()),{ fileName : "AreaGame.hx", lineNumber : 1251, className : "game.AreaGame", methodName : "getPath"});
 		}
 		return null;
 	}
@@ -10629,7 +10645,7 @@ game_AreaGame.prototype = {
 		var o = this._objects.iterator();
 		while(o.hasNext()) {
 			var o1 = o.next();
-			haxe_Log.trace(o1,{ fileName : "AreaGame.hx", lineNumber : 1253, className : "game.AreaGame", methodName : "debugShowObjects"});
+			haxe_Log.trace(o1,{ fileName : "AreaGame.hx", lineNumber : 1267, className : "game.AreaGame", methodName : "debugShowObjects"});
 		}
 	}
 	,toString: function() {
@@ -10667,8 +10683,9 @@ var game_AreaGenerator = function() { };
 $hxClasses["game.AreaGenerator"] = game_AreaGenerator;
 game_AreaGenerator.__name__ = ["game","AreaGenerator"];
 game_AreaGenerator.generate = function(game1,area,info) {
+	var state = { alleys : new List(), sewers : new List(), blockSize : 20};
 	if(info.type == "city") {
-		game_AreaGenerator.generateCity(game1,area,info);
+		game_AreaGenerator.generateCity(state,game1,area,info);
 	} else if(info.type == "militaryBase") {
 		game_AreaGenerator.generateBuildings(game1,area,info);
 	} else if(info.type == "facility") {
@@ -10678,11 +10695,11 @@ game_AreaGenerator.generate = function(game1,area,info) {
 	} else if(info.type == "habitat") {
 		game_AreaGenerator.generateHabitat(game1,area,info);
 	} else {
-		haxe_Log.trace("AreaGenerator.generate(): unknown area type: " + info.type,{ fileName : "AreaGenerator.hx", lineNumber : 23, className : "game.AreaGenerator", methodName : "generate"});
+		haxe_Log.trace("AreaGenerator.generate(): unknown area type: " + info.type,{ fileName : "AreaGenerator.hx", lineNumber : 29, className : "game.AreaGenerator", methodName : "generate"});
 	}
-	game_AreaGenerator.generateObjects(game1,area,info);
+	game_AreaGenerator.generateObjects(state,game1,area,info);
 };
-game_AreaGenerator.generateCity = function(game1,area,info) {
+game_AreaGenerator.generateCity = function(state,game1,area,info) {
 	var cells = area.getCells();
 	var _g1 = 0;
 	var _g = area.height;
@@ -10695,21 +10712,22 @@ game_AreaGenerator.generateCity = function(game1,area,info) {
 			cells[x][y] = game_AreaGenerator.TEMP_BUILDING;
 		}
 	}
-	var blockSize = 20;
-	var blockW = area.width / blockSize | 0;
-	var blockH = area.height / blockSize | 0;
-	var blockW4 = area.width / blockSize / 4 | 0;
-	var blockH4 = area.height / blockSize / 4 | 0;
+	var blockW = area.width / state.blockSize | 0;
+	var blockH = area.height / state.blockSize | 0;
+	var blockW4 = area.width / state.blockSize / 4 | 0;
+	var blockH4 = area.height / state.blockSize / 4 | 0;
 	var bx = blockW4 + Std.random(blockW - 1 - blockW4);
 	var by = blockH4 + Std.random(blockH - 1 - blockH4);
-	var state = { alleys : new List(), blockSize : blockSize};
 	var noMainRoad = true;
+	if(info.hasMainRoad == null || info.hasMainRoad == false) {
+		noMainRoad = false;
+	}
 	var mainRoadChance = 20;
 	var _g4 = 0;
 	while(_g4 < 4) {
 		var i = _g4++;
 		var level = noMainRoad && Std.random(100) < mainRoadChance && i > 0 && i < 3 ? 0 : 1;
-		game_AreaGenerator.addStreet(state,area,cells,game__$LineDir.LR,0,blockSize * (i + 1),level);
+		game_AreaGenerator.addStreet(state,area,cells,game__$LineDir.LR,0,state.blockSize * (i + 1),level);
 		if(level == 0) {
 			noMainRoad = false;
 		} else {
@@ -10720,7 +10738,7 @@ game_AreaGenerator.generateCity = function(game1,area,info) {
 	while(_g5 < 4) {
 		var i1 = _g5++;
 		var level1 = noMainRoad && Std.random(100) < mainRoadChance && i1 > 0 && i1 < 3 ? 0 : 1;
-		game_AreaGenerator.addStreet(state,area,cells,game__$LineDir.TB,blockSize * (i1 + 1),0,level1);
+		game_AreaGenerator.addStreet(state,area,cells,game__$LineDir.TB,state.blockSize * (i1 + 1),0,level1);
 		if(level1 == 0) {
 			noMainRoad = false;
 		} else {
@@ -10758,7 +10776,7 @@ game_AreaGenerator.generateCity = function(game1,area,info) {
 		var val1 = _g_head1.item;
 		_g_head1 = _g_head1.next;
 		var b1 = val1;
-		game_AreaGenerator.generateBlock(area,b1);
+		game_AreaGenerator.generateBlock(area,info,b1);
 	}
 	var _g7 = new haxe_ds_IntMap();
 	_g7.h[game_AreaGenerator.TEMP_ROAD] = Const.TILE_ROAD;
@@ -10807,7 +10825,7 @@ game_AreaGenerator.markBlock = function(area,bx,by) {
 	}
 	return block;
 };
-game_AreaGenerator.generateBlock = function(area,block) {
+game_AreaGenerator.generateBlock = function(area,info,block) {
 	var _g1 = block.y1 + 1;
 	var _g = block.y2;
 	while(_g1 < _g) {
@@ -10819,8 +10837,8 @@ game_AreaGenerator.generateBlock = function(area,block) {
 			if(Std.random(100) > 30) {
 				continue;
 			}
-			var sx = 6 + 2 * Std.random(5);
-			var sy = 6 + 2 * Std.random(5);
+			var sx = 6 + 2 * Std.random(info.buildingSize);
+			var sy = 6 + 2 * Std.random(info.buildingSize);
 			if(x + sx > block.x2 - 1) {
 				sx = block.x2 - 1 - x;
 			}
@@ -10974,9 +10992,8 @@ game_AreaGenerator.addStreet = function(state,area,cells,dir,sx,sy,level) {
 	var i = 0;
 	var xx = sx;
 	var yy = sy;
-	var prevRoad = dir == game__$LineDir.TB || dir == game__$LineDir.BT ? sy : sx;
-	var prevRoadDir = game__$LineDir.TB;
 	var w = 0;
+	var toggle = false;
 	var streetLevel = game_AreaGenerator.streetLevels[level];
 	w = streetLevel.w;
 	while(!(xx > area.width || yy > area.height)) {
@@ -11008,17 +11025,35 @@ game_AreaGenerator.addStreet = function(state,area,cells,dir,sx,sy,level) {
 			game_AreaGenerator.fillBlock(area,cells,xx + dx,yy + dy,game_AreaGenerator.TEMP_ROAD,w);
 			break;
 		}
-		var newRoad = dx != 0 ? xx : yy;
 		var bs = 8;
-		if(dir == game__$LineDir.TB && (yy - sy - w) % bs == 0 && yy - prevRoad > bs && yy != sy) {
+		if(dir == game__$LineDir.TB && (yy - sy - w) % bs == 0 && yy != sy) {
 			state.alleys.add({ x : xx - 2, y : yy, t : game__$LineDir.RL});
 			state.alleys.add({ x : xx + w, y : yy, t : game__$LineDir.LR});
-		} else if(dir == game__$LineDir.LR && (xx - sx - w) % bs == 0 && xx - prevRoad > bs && xx != sx) {
+		} else if(dir == game__$LineDir.LR && (xx - sx - w) % bs == 0 && xx != sx) {
 			state.alleys.add({ x : xx, y : yy - 2, t : game__$LineDir.BT});
 			state.alleys.add({ x : xx, y : yy + w, t : game__$LineDir.TB});
 		}
+		var bs1 = 4;
+		if(dir == game__$LineDir.TB && (yy - sy - w) % bs1 == 0 && yy != sy) {
+			if(area.getCellType(xx - 1,yy) != game_AreaGenerator.TEMP_ROAD) {
+				state.sewers.add({ x : xx - 1, y : yy});
+			}
+			if(area.getCellType(xx + w,yy) != game_AreaGenerator.TEMP_ROAD) {
+				state.sewers.add({ x : xx + w, y : yy});
+			}
+			state.sewers.add({ x : xx + streetLevel.half + (toggle ? -1 : 0), y : yy});
+		} else if(dir == game__$LineDir.LR && (xx - sx - w) % bs1 == 0 && xx != sx) {
+			if(area.getCellType(xx,yy - 1) != game_AreaGenerator.TEMP_ROAD) {
+				state.sewers.add({ x : xx, y : yy - 1});
+			}
+			if(area.getCellType(xx,yy + w) != game_AreaGenerator.TEMP_ROAD) {
+				state.sewers.add({ x : xx, y : yy + w});
+			}
+			state.sewers.add({ x : xx, y : yy + streetLevel.half + (toggle ? -1 : 0)});
+		}
 		xx += dx;
 		yy += dy;
+		toggle = !toggle;
 		++i;
 	}
 };
@@ -11223,59 +11258,39 @@ game_AreaGenerator.generateBuildings = function(game1,area,info) {
 		}
 	}
 };
-game_AreaGenerator.generateObjects = function(game1,area,info) {
-	var _g = 0;
-	var _g1 = info.objects;
-	while(_g < _g1.length) {
-		var objInfo = _g1[_g];
-		++_g;
-		var _g3 = 0;
-		var _g2 = objInfo.amount;
-		while(_g3 < _g2) {
-			var i = _g3++;
-			var loc = null;
-			var cnt = 0;
-			while(true) {
-				loc = area.findEmptyLocation();
-				++cnt;
-				if(cnt > 500) {
-					haxe_Log.trace("Area.generateObjects(): no free spot for another " + objInfo.id + ", please report",{ fileName : "AreaGenerator.hx", lineNumber : 731, className : "game.AreaGenerator", methodName : "generateObjects"});
-					return;
-				}
-				var ok = true;
-				var _g4 = -3;
-				while(_g4 < 3) {
-					var y = _g4++;
-					var _g5 = -3;
-					while(_g5 < 3) {
-						var x = _g5++;
-						var olist = area.getObjectsAt(loc.x + x,loc.y + y);
-						var _g6_head = olist.h;
-						while(_g6_head != null) {
-							var val = _g6_head.item;
-							_g6_head = _g6_head.next;
-							var o = val;
-							if(o.type == objInfo.id) {
-								ok = false;
-								break;
-							}
-						}
-						if(!ok) {
-							break;
-						}
-					}
-				}
-				if(ok) {
+game_AreaGenerator.generateObjects = function(state,game1,area,info) {
+	var spawned = new List();
+	var _g_head = state.sewers.h;
+	while(_g_head != null) {
+		var val = _g_head.item;
+		_g_head = _g_head.next;
+		var pt = val;
+		if(Std.random(100) < 20) {
+			var c = area.getCellType(pt.x,pt.y);
+			if(c != Const.TILE_ROAD && c != Const.TILE_WALKWAY) {
+				continue;
+			}
+			var ok = true;
+			var _g_head1 = spawned.h;
+			while(_g_head1 != null) {
+				var val1 = _g_head1.item;
+				_g_head1 = _g_head1.next;
+				var old = val1;
+				var x1 = pt.x;
+				var y1 = pt.y;
+				var x2 = old.x;
+				var y2 = old.y;
+				if((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) < 64) {
+					ok = false;
 					break;
 				}
 			}
-			var o1 = null;
-			if(objInfo.id == "sewer_hatch") {
-				o1 = new objects_SewerHatch(game1,loc.x,loc.y);
-			} else {
-				throw new js__$Boot_HaxeError("unknown object type: " + objInfo.id);
+			if(!ok) {
+				continue;
 			}
-			area._objects.set(o1.id,o1);
+			var o = new objects_SewerHatch(game1,pt.x,pt.y);
+			spawned.add(pt);
+			area._objects.set(o.id,o);
 		}
 	}
 };
@@ -11447,7 +11462,7 @@ game_AreaManager.prototype = {
 			var i = _g1++;
 			var loc = this.get_area().findLocation({ near : { x : e.x, y : e.y}, radius : 5, isUnseen : true});
 			if(loc == null) {
-				haxe_Log.trace("TODO: " + "Could not find free spot for spawn!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+				haxe_Log.trace("TODO: " + "Could not find free spot for spawn (law)!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
 				return;
 			}
 			var ai1 = null;
@@ -11490,9 +11505,9 @@ game_AreaManager.prototype = {
 		var _g = 0;
 		while(_g < 2) {
 			var i = _g++;
-			var loc = this.get_area().findEmptyLocationNear(e.x,e.y);
+			var loc = this.get_area().findEmptyLocationNear(e.x,e.y,5);
 			if(loc == null) {
-				haxe_Log.trace("TODO: " + "Could not find free spot for spawn!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+				haxe_Log.trace("TODO: " + "Could not find free spot for spawn (area)!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
 				return;
 			}
 			var ai1 = null;
@@ -11543,9 +11558,9 @@ game_AreaManager.prototype = {
 			var i = _g++;
 			var loc = this.game.area.findLocation({ near : { x : e.x, y : e.y}, radius : 10, isUnseen : true});
 			if(loc == null) {
-				loc = this.get_area().findEmptyLocationNear(e.x,e.y);
+				loc = this.get_area().findEmptyLocationNear(e.x,e.y,5);
 				if(loc == null) {
-					haxe_Log.trace("TODO: " + "Could not find free spot for spawn x2!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+					haxe_Log.trace("TODO: " + "Could not find free spot for spawn (team backup)!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
 					return;
 				}
 			}
@@ -11587,8 +11602,10 @@ game_ConsoleGame.prototype = {
 			if(arr[0] == "config" || arr[0] == "cfg") {
 				this.configOptionCommand(arr);
 			}
+		} else if(char0 == "d") {
+			this.debugCommand(cmd);
 		} else if(char0 == "h") {
-			this.game.log("Available commands: cfg, config, restart, quit.",_$TextColor.COLOR_DEBUG);
+			this.game.log("Available commands: cfg, config, " + "dg - debug: graphics info, " + "restart, quit.",_$TextColor.COLOR_DEBUG);
 		} else if(char0 == "r") {
 			this.game.restart();
 		} else if(char0 == "q") {
@@ -11695,7 +11712,7 @@ game_ConsoleGame.prototype = {
 		if(cmd.charAt(1) == "i") {
 			if(arr.length < 2) {
 				var buf_b = "";
-				buf_b += "Usage: ai [item]\n";
+				buf_b += "Usage: ai [item]<br/>";
 				buf_b += "Items: ";
 				var _g = 0;
 				var _g1 = const_ItemsConst.items;
@@ -11727,7 +11744,7 @@ game_ConsoleGame.prototype = {
 					if(imp.organ == null) {
 						continue;
 					}
-					s_b += Std.string(i + ": " + imp.organ.name + ", " + Std.string(imp.id) + "\n");
+					s_b += Std.string(i + ": " + imp.organ.name + ", " + Std.string(imp.id) + "<br/>");
 				}
 				this.game.log(s_b,_$TextColor.COLOR_DEBUG);
 				return;
@@ -11773,7 +11790,7 @@ game_ConsoleGame.prototype = {
 				haxe_CallStack.lastException = e;
 				if (e instanceof js__$Boot_HaxeError) e = e.val;
 				skill = null;
-				haxe_Log.trace(e,{ fileName : "ConsoleGame.hx", lineNumber : 322, className : "game.ConsoleGame", methodName : "addCommand"});
+				haxe_Log.trace(e,{ fileName : "ConsoleGame.hx", lineNumber : 329, className : "game.ConsoleGame", methodName : "addCommand"});
 			}
 			if(skill == null) {
 				try {
@@ -11782,7 +11799,7 @@ game_ConsoleGame.prototype = {
 					haxe_CallStack.lastException = e1;
 					if (e1 instanceof js__$Boot_HaxeError) e1 = e1.val;
 					skill = null;
-					haxe_Log.trace(e1,{ fileName : "ConsoleGame.hx", lineNumber : 332, className : "game.ConsoleGame", methodName : "addCommand"});
+					haxe_Log.trace(e1,{ fileName : "ConsoleGame.hx", lineNumber : 339, className : "game.ConsoleGame", methodName : "addCommand"});
 				}
 			}
 			if(skill == null) {
@@ -11791,6 +11808,12 @@ game_ConsoleGame.prototype = {
 			}
 			this.game.player.skills.addID(skill,amount);
 			this.game.log("Skill/knowledge added.");
+		}
+	}
+	,debugCommand: function(cmd) {
+		if(cmd.charAt(1) == "g") {
+			var s = "Scene children objects: " + this.game.scene.children.length + "<br/>Scene total objects: " + this.game.scene.getObjectsCount();
+			this.game.log(s,_$TextColor.COLOR_DEBUG);
 		}
 	}
 	,goCommand: function(cmd) {
@@ -11953,7 +11976,7 @@ game_ConsoleGame.prototype = {
 	}
 	,setCommand: function(cmd) {
 		if(cmd == "s") {
-			this.game.log(";s1 - set player stage 1 (human civilian host, tutorial done)\n" + ";s11 - set player stage 1.1 (stage 1 + group knowledge)\n" + ";s12 - set player stage 1.2 (stage 1.1 + ambush)\n" + ";s2 - set player stage 2 (stage 1 + microhabitat)\n" + ";s21 - set player stage 2.1 (stage 2 + camo layer, computer use)\n" + ";s22 - set player stage 2.2 (stage 2.1 + biomineral)\n" + ";s23 - set player stage 2.3 (stage 2.2 + assimilation)\n" + ";s3 - set player stage 3 (stage 2.3 + timeline open until scenario goals)",_$TextColor.COLOR_DEBUG);
+			this.game.log(";s1 - set player stage 1 (human civilian host, tutorial done)<br/>" + ";s11 - set player stage 1.1 (stage 1 + group knowledge)<br/>" + ";s12 - set player stage 1.2 (stage 1.1 + ambush)<br/>" + ";s2 - set player stage 2 (stage 1 + microhabitat)<br/>" + ";s21 - set player stage 2.1 (stage 2 + camo layer, computer use)<br/>" + ";s22 - set player stage 2.2 (stage 2.1 + biomineral)<br/>" + ";s23 - set player stage 2.3 (stage 2.2 + assimilation)<br/>" + ";s3 - set player stage 3 (stage 2.3 + timeline open until scenario goals)",_$TextColor.COLOR_DEBUG);
 			return;
 		}
 		var stage = Std.parseInt(HxOverrides.substr(cmd,1,null));
@@ -12028,7 +12051,7 @@ game_ConsoleGame.prototype = {
 			++_g;
 			var ev = this.game.timeline._eventsMap.get(id);
 			var npc = null;
-			haxe_Log.trace(ev.npc,{ fileName : "ConsoleGame.hx", lineNumber : 703, className : "game.ConsoleGame", methodName : "stage11"});
+			haxe_Log.trace(ev.npc,{ fileName : "ConsoleGame.hx", lineNumber : 722, className : "game.ConsoleGame", methodName : "stage11"});
 			var _g1 = 0;
 			var _g2 = ev.npc;
 			while(_g1 < _g2.length) {
@@ -12254,7 +12277,7 @@ var game_DebugArea = function(g) {
 		var o1 = _gthis.game.area._objects.iterator();
 		while(o1.hasNext()) {
 			var o2 = o1.next();
-			haxe_Log.trace(o2,{ fileName : "AreaGame.hx", lineNumber : 1253, className : "game.AreaGame", methodName : "debugShowObjects"});
+			haxe_Log.trace(o2,{ fileName : "AreaGame.hx", lineNumber : 1267, className : "game.AreaGame", methodName : "debugShowObjects"});
 		}
 	}},{ name : "Show area manager queue", func : function() {
 		_gthis.game.managerArea.debugShowQueue();
@@ -12755,7 +12778,7 @@ $hxClasses["game.Game"] = game_Game;
 game_Game.__name__ = ["game","Game"];
 game_Game.prototype = {
 	init: function() {
-		var s = "Parasite v" + "0.5" + " (build: " + "20190405-363" + ")";
+		var s = "Parasite v" + "0.5" + " (build: " + "20190407-366" + ")";
 		this.log(s);
 		this.log("<font face=\"10\">Sinister reflections might shed some light on the nature of perception.</font>",_$TextColor.COLOR_DEBUG);
 		this.turns = 0;
@@ -15944,7 +15967,7 @@ game_Team.prototype = $extend(game_FSM.prototype,{
 				var i = _g++;
 				var loc = this.game.area.findLocation({ near : { x : x, y : y}, radius : 10, isUnseen : true});
 				if(loc == null) {
-					loc = this.game.area.findEmptyLocationNear(x,y);
+					loc = this.game.area.findEmptyLocationNear(x,y,5);
 					if(loc == null) {
 						haxe_Log.trace("TODO: " + "Could not find free spot for spawn x2!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
 						return;
@@ -59951,6 +59974,7 @@ $hxClasses["hxd.snd.NativeChannel"] = hxd_snd_NativeChannel;
 hxd_snd_NativeChannel.__name__ = ["hxd","snd","NativeChannel"];
 hxd_snd_NativeChannel.getContext = function() {
 	haxe_Log.trace("456",{ fileName : "NativeChannel.hx", lineNumber : 93, className : "hxd.snd.NativeChannel", methodName : "getContext"});
+	haxe_Log.trace(haxe_CallStack.toString(haxe_CallStack.callStack()),{ fileName : "NativeChannel.hx", lineNumber : 94, className : "hxd.snd.NativeChannel", methodName : "getContext"});
 	return null;
 };
 hxd_snd_NativeChannel.waitForPageInput = function() {
@@ -60450,6 +60474,232 @@ hxd_snd_openal_Buffer.prototype = {
 		return this.id;
 	}
 	,__class__: hxd_snd_openal_Buffer
+};
+var js_Boot = function() { };
+$hxClasses["js.Boot"] = js_Boot;
+js_Boot.__name__ = ["js","Boot"];
+js_Boot.__unhtml = function(s) {
+	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
+};
+js_Boot.__trace = function(v,i) {
+	var msg = i != null ? i.fileName + ":" + i.lineNumber + ": " : "";
+	msg += js_Boot.__string_rec(v,"");
+	if(i != null && i.customParams != null) {
+		var _g = 0;
+		var _g1 = i.customParams;
+		while(_g < _g1.length) {
+			var v1 = _g1[_g];
+			++_g;
+			msg += "," + js_Boot.__string_rec(v1,"");
+		}
+	}
+	var d;
+	var tmp;
+	if(typeof(document) != "undefined") {
+		d = document.getElementById("haxe:trace");
+		tmp = d != null;
+	} else {
+		tmp = false;
+	}
+	if(tmp) {
+		d.innerHTML += js_Boot.__unhtml(msg) + "<br/>";
+	} else if(typeof console != "undefined" && console.log != null) {
+		console.log(msg);
+	}
+};
+js_Boot.getClass = function(o) {
+	if((o instanceof Array) && o.__enum__ == null) {
+		return Array;
+	} else {
+		var cl = o.__class__;
+		if(cl != null) {
+			return cl;
+		}
+		var name = js_Boot.__nativeClassName(o);
+		if(name != null) {
+			return js_Boot.__resolveNativeClass(name);
+		}
+		return null;
+	}
+};
+js_Boot.__string_rec = function(o,s) {
+	if(o == null) {
+		return "null";
+	}
+	if(s.length >= 5) {
+		return "<...>";
+	}
+	var t = typeof(o);
+	if(t == "function" && (o.__name__ || o.__ename__)) {
+		t = "object";
+	}
+	switch(t) {
+	case "function":
+		return "<function>";
+	case "object":
+		if(o instanceof Array) {
+			if(o.__enum__) {
+				if(o.length == 2) {
+					return o[0];
+				}
+				var str = o[0] + "(";
+				s += "\t";
+				var _g1 = 2;
+				var _g = o.length;
+				while(_g1 < _g) {
+					var i = _g1++;
+					if(i != 2) {
+						str += "," + js_Boot.__string_rec(o[i],s);
+					} else {
+						str += js_Boot.__string_rec(o[i],s);
+					}
+				}
+				return str + ")";
+			}
+			var l = o.length;
+			var i1;
+			var str1 = "[";
+			s += "\t";
+			var _g11 = 0;
+			var _g2 = l;
+			while(_g11 < _g2) {
+				var i2 = _g11++;
+				str1 += (i2 > 0 ? "," : "") + js_Boot.__string_rec(o[i2],s);
+			}
+			str1 += "]";
+			return str1;
+		}
+		var tostr;
+		try {
+			tostr = o.toString;
+		} catch( e ) {
+			haxe_CallStack.lastException = e;
+			return "???";
+		}
+		if(tostr != null && tostr != Object.toString && typeof(tostr) == "function") {
+			var s2 = o.toString();
+			if(s2 != "[object Object]") {
+				return s2;
+			}
+		}
+		var k = null;
+		var str2 = "{\n";
+		s += "\t";
+		var hasp = o.hasOwnProperty != null;
+		for( var k in o ) {
+		if(hasp && !o.hasOwnProperty(k)) {
+			continue;
+		}
+		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__" || k == "__properties__") {
+			continue;
+		}
+		if(str2.length != 2) {
+			str2 += ", \n";
+		}
+		str2 += s + k + " : " + js_Boot.__string_rec(o[k],s);
+		}
+		s = s.substring(1);
+		str2 += "\n" + s + "}";
+		return str2;
+	case "string":
+		return o;
+	default:
+		return String(o);
+	}
+};
+js_Boot.__interfLoop = function(cc,cl) {
+	if(cc == null) {
+		return false;
+	}
+	if(cc == cl) {
+		return true;
+	}
+	var intf = cc.__interfaces__;
+	if(intf != null) {
+		var _g1 = 0;
+		var _g = intf.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var i1 = intf[i];
+			if(i1 == cl || js_Boot.__interfLoop(i1,cl)) {
+				return true;
+			}
+		}
+	}
+	return js_Boot.__interfLoop(cc.__super__,cl);
+};
+js_Boot.__instanceof = function(o,cl) {
+	if(cl == null) {
+		return false;
+	}
+	switch(cl) {
+	case Array:
+		if((o instanceof Array)) {
+			return o.__enum__ == null;
+		} else {
+			return false;
+		}
+		break;
+	case Bool:
+		return typeof(o) == "boolean";
+	case Dynamic:
+		return true;
+	case Float:
+		return typeof(o) == "number";
+	case Int:
+		if(typeof(o) == "number") {
+			return (o|0) === o;
+		} else {
+			return false;
+		}
+		break;
+	case String:
+		return typeof(o) == "string";
+	default:
+		if(o != null) {
+			if(typeof(cl) == "function") {
+				if(o instanceof cl) {
+					return true;
+				}
+				if(js_Boot.__interfLoop(js_Boot.getClass(o),cl)) {
+					return true;
+				}
+			} else if(typeof(cl) == "object" && js_Boot.__isNativeObj(cl)) {
+				if(o instanceof cl) {
+					return true;
+				}
+			}
+		} else {
+			return false;
+		}
+		if(cl == Class ? o.__name__ != null : false) {
+			return true;
+		}
+		if(cl == Enum ? o.__ename__ != null : false) {
+			return true;
+		}
+		return o.__enum__ == cl;
+	}
+};
+js_Boot.__cast = function(o,t) {
+	if(js_Boot.__instanceof(o,t)) {
+		return o;
+	} else {
+		throw new js__$Boot_HaxeError("Cannot cast " + Std.string(o) + " to " + Std.string(t));
+	}
+};
+js_Boot.__nativeClassName = function(o) {
+	var name = js_Boot.__toStr.call(o).slice(8,-1);
+	if(name == "Object" || name == "Function" || name == "Math" || name == "JSON") {
+		return null;
+	}
+	return name;
+};
+js_Boot.__isNativeObj = function(o) {
+	return js_Boot.__nativeClassName(o) != null;
+};
+js_Boot.__resolveNativeClass = function(name) {
+	return $global[name];
 };
 var hxd_snd_openal_Emulator = function() { };
 $hxClasses["hxd.snd.openal.Emulator"] = hxd_snd_openal_Emulator;
@@ -66504,232 +66754,6 @@ hxsl_Globals.prototype = {
 		return i1;
 	}
 	,__class__: hxsl_Globals
-};
-var js_Boot = function() { };
-$hxClasses["js.Boot"] = js_Boot;
-js_Boot.__name__ = ["js","Boot"];
-js_Boot.__unhtml = function(s) {
-	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
-};
-js_Boot.__trace = function(v,i) {
-	var msg = i != null ? i.fileName + ":" + i.lineNumber + ": " : "";
-	msg += js_Boot.__string_rec(v,"");
-	if(i != null && i.customParams != null) {
-		var _g = 0;
-		var _g1 = i.customParams;
-		while(_g < _g1.length) {
-			var v1 = _g1[_g];
-			++_g;
-			msg += "," + js_Boot.__string_rec(v1,"");
-		}
-	}
-	var d;
-	var tmp;
-	if(typeof(document) != "undefined") {
-		d = document.getElementById("haxe:trace");
-		tmp = d != null;
-	} else {
-		tmp = false;
-	}
-	if(tmp) {
-		d.innerHTML += js_Boot.__unhtml(msg) + "<br/>";
-	} else if(typeof console != "undefined" && console.log != null) {
-		console.log(msg);
-	}
-};
-js_Boot.getClass = function(o) {
-	if((o instanceof Array) && o.__enum__ == null) {
-		return Array;
-	} else {
-		var cl = o.__class__;
-		if(cl != null) {
-			return cl;
-		}
-		var name = js_Boot.__nativeClassName(o);
-		if(name != null) {
-			return js_Boot.__resolveNativeClass(name);
-		}
-		return null;
-	}
-};
-js_Boot.__string_rec = function(o,s) {
-	if(o == null) {
-		return "null";
-	}
-	if(s.length >= 5) {
-		return "<...>";
-	}
-	var t = typeof(o);
-	if(t == "function" && (o.__name__ || o.__ename__)) {
-		t = "object";
-	}
-	switch(t) {
-	case "function":
-		return "<function>";
-	case "object":
-		if(o instanceof Array) {
-			if(o.__enum__) {
-				if(o.length == 2) {
-					return o[0];
-				}
-				var str = o[0] + "(";
-				s += "\t";
-				var _g1 = 2;
-				var _g = o.length;
-				while(_g1 < _g) {
-					var i = _g1++;
-					if(i != 2) {
-						str += "," + js_Boot.__string_rec(o[i],s);
-					} else {
-						str += js_Boot.__string_rec(o[i],s);
-					}
-				}
-				return str + ")";
-			}
-			var l = o.length;
-			var i1;
-			var str1 = "[";
-			s += "\t";
-			var _g11 = 0;
-			var _g2 = l;
-			while(_g11 < _g2) {
-				var i2 = _g11++;
-				str1 += (i2 > 0 ? "," : "") + js_Boot.__string_rec(o[i2],s);
-			}
-			str1 += "]";
-			return str1;
-		}
-		var tostr;
-		try {
-			tostr = o.toString;
-		} catch( e ) {
-			haxe_CallStack.lastException = e;
-			return "???";
-		}
-		if(tostr != null && tostr != Object.toString && typeof(tostr) == "function") {
-			var s2 = o.toString();
-			if(s2 != "[object Object]") {
-				return s2;
-			}
-		}
-		var k = null;
-		var str2 = "{\n";
-		s += "\t";
-		var hasp = o.hasOwnProperty != null;
-		for( var k in o ) {
-		if(hasp && !o.hasOwnProperty(k)) {
-			continue;
-		}
-		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__" || k == "__properties__") {
-			continue;
-		}
-		if(str2.length != 2) {
-			str2 += ", \n";
-		}
-		str2 += s + k + " : " + js_Boot.__string_rec(o[k],s);
-		}
-		s = s.substring(1);
-		str2 += "\n" + s + "}";
-		return str2;
-	case "string":
-		return o;
-	default:
-		return String(o);
-	}
-};
-js_Boot.__interfLoop = function(cc,cl) {
-	if(cc == null) {
-		return false;
-	}
-	if(cc == cl) {
-		return true;
-	}
-	var intf = cc.__interfaces__;
-	if(intf != null) {
-		var _g1 = 0;
-		var _g = intf.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var i1 = intf[i];
-			if(i1 == cl || js_Boot.__interfLoop(i1,cl)) {
-				return true;
-			}
-		}
-	}
-	return js_Boot.__interfLoop(cc.__super__,cl);
-};
-js_Boot.__instanceof = function(o,cl) {
-	if(cl == null) {
-		return false;
-	}
-	switch(cl) {
-	case Array:
-		if((o instanceof Array)) {
-			return o.__enum__ == null;
-		} else {
-			return false;
-		}
-		break;
-	case Bool:
-		return typeof(o) == "boolean";
-	case Dynamic:
-		return true;
-	case Float:
-		return typeof(o) == "number";
-	case Int:
-		if(typeof(o) == "number") {
-			return (o|0) === o;
-		} else {
-			return false;
-		}
-		break;
-	case String:
-		return typeof(o) == "string";
-	default:
-		if(o != null) {
-			if(typeof(cl) == "function") {
-				if(o instanceof cl) {
-					return true;
-				}
-				if(js_Boot.__interfLoop(js_Boot.getClass(o),cl)) {
-					return true;
-				}
-			} else if(typeof(cl) == "object" && js_Boot.__isNativeObj(cl)) {
-				if(o instanceof cl) {
-					return true;
-				}
-			}
-		} else {
-			return false;
-		}
-		if(cl == Class ? o.__name__ != null : false) {
-			return true;
-		}
-		if(cl == Enum ? o.__ename__ != null : false) {
-			return true;
-		}
-		return o.__enum__ == cl;
-	}
-};
-js_Boot.__cast = function(o,t) {
-	if(js_Boot.__instanceof(o,t)) {
-		return o;
-	} else {
-		throw new js__$Boot_HaxeError("Cannot cast " + Std.string(o) + " to " + Std.string(t));
-	}
-};
-js_Boot.__nativeClassName = function(o) {
-	var name = js_Boot.__toStr.call(o).slice(8,-1);
-	if(name == "Object" || name == "Function" || name == "Math" || name == "JSON") {
-		return null;
-	}
-	return name;
-};
-js_Boot.__isNativeObj = function(o) {
-	return js_Boot.__nativeClassName(o) != null;
-};
-js_Boot.__resolveNativeClass = function(name) {
-	return $global[name];
 };
 var hxsl_GlslOut = function() {
 	this.outIndex = 0;
@@ -72951,7 +72975,7 @@ ui_Mouse.__name__ = ["ui","Mouse"];
 ui_Mouse.prototype = {
 	onClick: function(button) {
 		var pos = { x : (this.game.scene.cameraX + this.game.scene.get_mouseX()) / Const.TILE_SIZE | 0, y : (this.game.scene.cameraY + this.game.scene.get_mouseY()) / Const.TILE_SIZE | 0};
-		if(this.game.scene._state != _$UIState.UISTATE_DEFAULT) {
+		if(this.game.isFinished || this.game.scene._state != _$UIState.UISTATE_DEFAULT) {
 			return;
 		}
 		if(this.game.location == _$LocationType.LOCATION_AREA) {
@@ -73003,7 +73027,7 @@ ui_Mouse.prototype = {
 		}
 		this.oldx = this.game.scene.get_mouseX();
 		this.oldy = this.game.scene.get_mouseY();
-		if(this.game.scene._state != _$UIState.UISTATE_DEFAULT) {
+		if(this.game.isFinished || this.game.scene._state != _$UIState.UISTATE_DEFAULT) {
 			this.setCursor(ui_Mouse.CURSOR_ARROW);
 			this.sceneState = this.game.scene._state;
 			if(this.forceNextUpdate > 0) {
@@ -73924,7 +73948,7 @@ const_WorldConst.areas = (function($this) {
 		} else {
 			_g.h["dog"] = 5;
 		}
-		_g6.set(_$AreaType.AREA_GROUND,{ id : _$AreaType.AREA_GROUND, type : "wilderness", name : "Uninhabited area", width : 100, height : 100, canEnter : true, isInhabited : false, commonAI : 0, uncommonAI : 0, buildingChance : 0.0, lawResponceTime : 0, lawResponceAmount : 0, lawResponceEnabled : false, isHighRisk : false, ai : _g, objects : []});
+		_g6.set(_$AreaType.AREA_GROUND,{ id : _$AreaType.AREA_GROUND, type : "wilderness", name : "Uninhabited area", width : 100, height : 100, canEnter : true, isInhabited : false, commonAI : 0, uncommonAI : 0, lawResponceTime : 0, lawResponceAmount : 0, lawResponceEnabled : false, isHighRisk : false, ai : _g, objects : []});
 	}
 	{
 		var _g1 = new haxe_ds_StringMap();
@@ -73943,7 +73967,7 @@ const_WorldConst.areas = (function($this) {
 		} else {
 			_g1.h["police"] = 5;
 		}
-		_g6.set(_$AreaType.AREA_CITY_LOW,{ id : _$AreaType.AREA_CITY_LOW, type : "city", name : "Low-density city area", width : 100, height : 100, canEnter : true, isInhabited : true, commonAI : 8, uncommonAI : 5, buildingChance : 0.05, lawResponceTime : 10, lawResponceAmount : 2, lawResponceEnabled : true, isHighRisk : false, ai : _g1, objects : [{ id : "sewer_hatch", amount : 10}]});
+		_g6.set(_$AreaType.AREA_CITY_LOW,{ id : _$AreaType.AREA_CITY_LOW, type : "city", name : "Low-density city area", width : 100, height : 100, canEnter : true, isInhabited : true, commonAI : 8, uncommonAI : 5, buildingSize : 1, lawResponceTime : 10, lawResponceAmount : 2, lawResponceEnabled : true, isHighRisk : false, ai : _g1, objects : [{ id : "sewer_hatch", amount : 10}]});
 	}
 	{
 		var _g2 = new haxe_ds_StringMap();
@@ -73962,7 +73986,7 @@ const_WorldConst.areas = (function($this) {
 		} else {
 			_g2.h["police"] = 10;
 		}
-		_g6.set(_$AreaType.AREA_CITY_MEDIUM,{ id : _$AreaType.AREA_CITY_MEDIUM, type : "city", name : "Medium-density city area", width : 100, height : 100, canEnter : true, isInhabited : true, commonAI : 12, uncommonAI : 8, buildingChance : 0.15, lawResponceTime : 5, lawResponceAmount : 2, lawResponceEnabled : true, isHighRisk : false, ai : _g2, objects : [{ id : "sewer_hatch", amount : 20}]});
+		_g6.set(_$AreaType.AREA_CITY_MEDIUM,{ id : _$AreaType.AREA_CITY_MEDIUM, type : "city", name : "Medium-density city area", width : 100, height : 100, canEnter : true, isInhabited : true, commonAI : 12, uncommonAI : 8, buildingSize : 5, lawResponceTime : 5, lawResponceAmount : 2, lawResponceEnabled : true, isHighRisk : false, hasMainRoad : true, ai : _g2, objects : [{ id : "sewer_hatch", amount : 20}]});
 	}
 	{
 		var _g3 = new haxe_ds_StringMap();
@@ -73981,7 +74005,7 @@ const_WorldConst.areas = (function($this) {
 		} else {
 			_g3.h["police"] = 25;
 		}
-		_g6.set(_$AreaType.AREA_CITY_HIGH,{ id : _$AreaType.AREA_CITY_HIGH, type : "city", name : "High-density city area", width : 100, height : 100, canEnter : true, isInhabited : true, commonAI : 28, uncommonAI : 12, buildingChance : 0.30, lawResponceTime : 5, lawResponceAmount : 3, lawResponceEnabled : true, isHighRisk : true, ai : _g3, objects : [{ id : "sewer_hatch", amount : 20}]});
+		_g6.set(_$AreaType.AREA_CITY_HIGH,{ id : _$AreaType.AREA_CITY_HIGH, type : "city", name : "High-density city area", width : 100, height : 100, canEnter : true, isInhabited : true, commonAI : 28, uncommonAI : 12, buildingSize : 10, lawResponceTime : 5, lawResponceAmount : 3, lawResponceEnabled : true, isHighRisk : true, hasMainRoad : true, ai : _g3, objects : [{ id : "sewer_hatch", amount : 20}]});
 	}
 	{
 		var _g4 = new haxe_ds_StringMap();
@@ -74034,7 +74058,7 @@ format_mp3_CEmphasis.EMs50_15 = 1;
 format_mp3_CEmphasis.EReserved = 2;
 format_mp3_CEmphasis.ECCIT_J17 = 3;
 game_AreaGame._maxID = 0;
-game_AreaGenerator.streetLevels = [{ w : 8, blockSize : 20},{ w : 4, blockSize : 16}];
+game_AreaGenerator.streetLevels = [{ w : 8, blockSize : 20, half : 4},{ w : 4, blockSize : 16, half : 2}];
 game_AreaGenerator.TEMP_BUILDING = 0;
 game_AreaGenerator.TEMP_ROAD = 1;
 game_AreaGenerator.TEMP_ALLEY = 2;
@@ -74045,6 +74069,7 @@ game_AreaGenerator.TEMP_ALLEY_RL = 6;
 game_AreaGenerator.TEMP_ACTUAL_BUILDING = 7;
 game_AreaGenerator.TEMP_WALKWAY = 8;
 game_AreaGenerator.TEMP_BLOCK = 9;
+game_AreaGenerator.TEMP_MARKER = 10;
 game_Player.HOST_CONTROL_BASE = 10;
 game_RegionGame._maxID = 0;
 h2d_HtmlText.REG_SPACES = new EReg("[\r\n\t ]+","g");
@@ -74488,6 +74513,7 @@ hxd_snd_openal_Source.ID = 0;
 hxd_snd_openal_Source.all = new haxe_ds_IntMap();
 hxd_snd_openal_Buffer.ID = 0;
 hxd_snd_openal_Buffer.all = new haxe_ds_IntMap();
+js_Boot.__toStr = ({ }).toString;
 hxd_snd_openal_Emulator.NATIVE_FREQ = (hxd_snd_NativeChannel.getContext() == null ? 44100 : hxd_snd_NativeChannel.getContext().sampleRate) | 0;
 hxd_snd_openal_Emulator.FORMAT_MONOF32 = 4368;
 hxd_snd_openal_Emulator.FORMAT_STEREOF32 = 4369;
@@ -74593,7 +74619,6 @@ hxsl_Tools.UID = 0;
 hxsl_Tools.SWIZ = hxsl_Component.__empty_constructs__;
 hxsl_Tools.MAX_CHANNELS_BITS = 3;
 hxsl_BatchShader.SRC = "oy4:funsahy4:namey16:hxsl.BatchShadery4:varsaoy4:kindjy12:hxsl.VarKind:2:0R1y11:Batch_County4:typejy9:hxsl.Type:1:0y10:qualifiersajy17:hxsl.VarQualifier:0:1i65536hy2:idi-1goR4r4R1y12:Batch_BufferR7jR8:16:2jR8:5:2i4jy12:hxsl.VecType:1:0jy13:hxsl.SizeDecl:1:1r3R11i-2ghg";
-js_Boot.__toStr = ({ }).toString;
 hxsl_GlslOut.KWD_LIST = ["input","output","discard","dvec2","dvec3","dvec4","hvec2","hvec3","hvec4","fvec2","fvec3","fvec4","int","float","bool","long","short","double","half","fixed","unsigned","superp","lowp","mediump","highp","precision","invariant","discard","struct","asm","union","template","this","packed","goto","sizeof","namespace","noline","volatile","external","flat","input","output","out","attribute","const","uniform","varying","inout","void"];
 hxsl_GlslOut.KWDS = (function($this) {
 	var $r;
