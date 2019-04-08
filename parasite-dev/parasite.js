@@ -72,7 +72,10 @@ AreaView.prototype = {
 			e.setPosition(e.x,e.y);
 		}
 	}
-	,clearPath: function() {
+	,clearPath: function(clearAll) {
+		if(clearAll == null) {
+			clearAll = false;
+		}
 		if(this._path == null) {
 			return;
 		}
@@ -84,6 +87,9 @@ AreaView.prototype = {
 			if(dot != null && dot.parent != null) {
 				dot.parent.removeChild(dot);
 			}
+		}
+		if(clearAll) {
+			this.game.playerArea.path = null;
 		}
 		this._path = null;
 	}
@@ -316,26 +322,27 @@ Atlas.prototype = {
 };
 var Config = function(g) {
 	this.game = g;
+	this.mouseEnabled = true;
 	this.extendedInfo = false;
-	this.hudLogLines = 4;
 	this.sendExceptions = false;
 	this.fontSize = 16;
 	this.fontSizeLarge = 24;
-	this.windowWidth = 1024;
+	this.hudLogLines = 4;
+	this.pathDelay = 100;
 	this.windowHeight = 768;
-	this.pathDelay = 50;
+	this.windowWidth = 1024;
 	this.map = new haxe_ds_StringMap();
 	var _this = this.map;
-	if(__map_reserved["extendedInfo"] != null) {
-		_this.setReserved("extendedInfo","0");
+	if(__map_reserved["mouseEnabled"] != null) {
+		_this.setReserved("mouseEnabled","1");
 	} else {
-		_this.h["extendedInfo"] = "0";
+		_this.h["mouseEnabled"] = "1";
 	}
 	var _this1 = this.map;
-	if(__map_reserved["hudLogLines"] != null) {
-		_this1.setReserved("hudLogLines","4");
+	if(__map_reserved["extendedInfo"] != null) {
+		_this1.setReserved("extendedInfo","0");
 	} else {
-		_this1.h["hudLogLines"] = "4";
+		_this1.h["extendedInfo"] = "0";
 	}
 	var _this2 = this.map;
 	if(__map_reserved["sendExceptions"] != null) {
@@ -350,26 +357,32 @@ var Config = function(g) {
 	} else {
 		_this3.h["fontSize"] = v;
 	}
-	var v1 = "" + this.windowWidth;
 	var _this4 = this.map;
-	if(__map_reserved["windowWidth"] != null) {
-		_this4.setReserved("windowWidth",v1);
+	if(__map_reserved["hudLogLines"] != null) {
+		_this4.setReserved("hudLogLines","4");
 	} else {
-		_this4.h["windowWidth"] = v1;
+		_this4.h["hudLogLines"] = "4";
+	}
+	var v1 = "" + this.pathDelay;
+	var _this5 = this.map;
+	if(__map_reserved["pathDelay"] != null) {
+		_this5.setReserved("pathDelay",v1);
+	} else {
+		_this5.h["pathDelay"] = v1;
 	}
 	var v2 = "" + this.windowHeight;
-	var _this5 = this.map;
-	if(__map_reserved["windowHeight"] != null) {
-		_this5.setReserved("windowHeight",v2);
-	} else {
-		_this5.h["windowHeight"] = v2;
-	}
-	var v3 = "" + this.pathDelay;
 	var _this6 = this.map;
-	if(__map_reserved["pathDelay"] != null) {
-		_this6.setReserved("pathDelay",v3);
+	if(__map_reserved["windowHeight"] != null) {
+		_this6.setReserved("windowHeight",v2);
 	} else {
-		_this6.h["pathDelay"] = v3;
+		_this6.h["windowHeight"] = v2;
+	}
+	var v3 = "" + this.windowWidth;
+	var _this7 = this.map;
+	if(__map_reserved["windowWidth"] != null) {
+		_this7.setReserved("windowWidth",v3);
+	} else {
+		_this7.h["windowWidth"] = v3;
 	}
 	var str = window.localStorage.getItem("config");
 	var obj = { };
@@ -393,16 +406,10 @@ Config.prototype = {
 		}
 		var key1 = StringTools.trim(key);
 		var val1 = StringTools.trim(val);
-		if(key1 == "extendedInfo") {
+		if(key1 == "mouseEnabled") {
+			this.mouseEnabled = val1 == "1";
+		} else if(key1 == "extendedInfo") {
 			this.extendedInfo = val1 == "1";
-		} else if(key1 == "hudLogLines") {
-			var v = Std.parseInt(val1);
-			if(v < 0) {
-				v = 0;
-			} else if(v > 10) {
-				v = 10;
-			}
-			this.hudLogLines = v;
 		} else if(key1 == "sendExceptions") {
 			this.sendExceptions = val1 == "1";
 		} else if(key1 == "fontSize") {
@@ -411,12 +418,20 @@ Config.prototype = {
 				this.fontSize = 8;
 			}
 			this.fontSizeLarge = this.fontSize * 1.5 | 0;
-		} else if(key1 == "windowWidth") {
-			this.windowWidth = Std.parseInt(val1);
-		} else if(key1 == "windowHeight") {
-			this.windowHeight = Std.parseInt(val1);
+		} else if(key1 == "hudLogLines") {
+			var v = Std.parseInt(val1);
+			if(v < 0) {
+				v = 0;
+			} else if(v > 10) {
+				v = 10;
+			}
+			this.hudLogLines = v;
 		} else if(key1 == "pathDelay") {
 			this.pathDelay = Std.parseInt(val1);
+		} else if(key1 == "windowHeight") {
+			this.windowHeight = Std.parseInt(val1);
+		} else if(key1 == "windowWidth") {
+			this.windowWidth = Std.parseInt(val1);
 		} else {
 			var _this = this.game;
 			return;
@@ -431,13 +446,13 @@ Config.prototype = {
 			this.save();
 		}
 	}
-	,dump: function() {
+	,dump: function(isHTML) {
 		var s_b = "";
 		var key = this.map.keys();
 		while(key.hasNext()) {
 			var key1 = key.next();
 			var _this = this.map;
-			s_b += Std.string(key1 + " = " + (__map_reserved[key1] != null ? _this.getReserved(key1) : _this.h[key1]) + "\n");
+			s_b += Std.string(key1 + " = " + (__map_reserved[key1] != null ? _this.getReserved(key1) : _this.h[key1]) + (isHTML ? "<br/>" : "\n"));
 		}
 		this.game.log(s_b,_$TextColor.COLOR_DEBUG);
 	}
@@ -2460,6 +2475,7 @@ GameScene.__name__ = ["GameScene"];
 GameScene.__super__ = h2d_Scene;
 GameScene.prototype = $extend(h2d_Scene.prototype,{
 	init: function() {
+		var _gthis = this;
 		hxd_Key.ALLOW_KEY_REPEAT = true;
 		this.atlas = new Atlas(this);
 		var res = hxd_Res.load("graphics/entities" + Const.TILE_SIZE + ".png").toTile();
@@ -2486,6 +2502,7 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 		_g.set(_$UIState.UISTATE_DEBUG,new ui_Debug(this.game));
 		_g.set(_$UIState.UISTATE_FINISH,new ui_Finish(this.game));
 		this.components = _g;
+		this.loseFocus = new ui_LoseFocus(this.game);
 		this.uiLocked = [_$UIState.UISTATE_DIFFICULTY,_$UIState.UISTATE_YESNO,_$UIState.UISTATE_DOCUMENT];
 		this.uiNoClose = [_$UIState.UISTATE_DEFAULT,_$UIState.UISTATE_YESNO,_$UIState.UISTATE_DIFFICULTY];
 		this.area = new AreaView(this);
@@ -2495,10 +2512,24 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 		var ymin = this.cameraTileY2 - this.cameraTileY1;
 		ai_AI.VIEW_DISTANCE = (xmin < ymin ? xmin : ymin) / 2.5 | 0;
 		ai_AI.HEAR_DISTANCE = (xmin < ymin ? xmin : ymin) * 1.5 / 2.5 | 0;
+		if(ai_AI.VIEW_DISTANCE > 10) {
+			ai_AI.VIEW_DISTANCE = 10;
+		}
+		if(ai_AI.HEAR_DISTANCE > 15) {
+			ai_AI.HEAR_DISTANCE = 15;
+		}
 		var _this = this.game;
 		if(_this.config.extendedInfo) {
 			_this.log("INFO " + ("AI view: " + ai_AI.VIEW_DISTANCE + ", AI hear: " + ai_AI.HEAR_DISTANCE),_$TextColor.COLOR_DEBUG);
 		}
+		window.onfocus = function() {
+			_gthis.loseFocus.window.set_visible(false);
+		};
+		window.onblur = function() {
+			var _this1 = _gthis.loseFocus;
+			_this1.update();
+			_this1.window.set_visible(true);
+		};
 	}
 	,updateCamera: function() {
 		var x = 0.0;
@@ -2594,11 +2625,25 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 				_this.update();
 				_this.window.set_visible(true);
 			}
+			if(this._state == _$UIState.UISTATE_MESSAGE) {
+				if(this.game.location == _$LocationType.LOCATION_AREA) {
+					this.game.scene.area.clearPath(true);
+				} else if(this.game.location == _$LocationType.LOCATION_REGION) {
+					this.game.scene.region.clearPath();
+				}
+			}
 			if(this._state != _$UIState.UISTATE_LOG) {
 				this.components.get(this._state).scrollToBegin();
 			}
 		}
 		return this._state;
+	}
+	,clearPath: function() {
+		if(this.game.location == _$LocationType.LOCATION_AREA) {
+			this.game.scene.area.clearPath(true);
+		} else if(this.game.location == _$LocationType.LOCATION_REGION) {
+			this.game.scene.region.clearPath();
+		}
 	}
 	,get_state: function() {
 		return this._state;
@@ -2827,8 +2872,8 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 			haxe_CallStack.lastException = e;
 			if (e instanceof js__$Boot_HaxeError) e = e.val;
 			var stack = haxe_CallStack.toString(haxe_CallStack.exceptionStack());
-			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 681, className : "GameScene", methodName : "onEvent"});
-			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 682, className : "GameScene", methodName : "onEvent"});
+			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 699, className : "GameScene", methodName : "onEvent"});
+			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 700, className : "GameScene", methodName : "onEvent"});
 		}
 	}
 	,__class__: GameScene
@@ -4010,95 +4055,107 @@ _$Difficulty.HARD = ["HARD",3];
 _$Difficulty.HARD.toString = $estr;
 _$Difficulty.HARD.__enum__ = _$Difficulty;
 _$Difficulty.__empty_constructs__ = [_$Difficulty.UNSET,_$Difficulty.EASY,_$Difficulty.NORMAL,_$Difficulty.HARD];
-var _$Goal = $hxClasses["_Goal"] = { __ename__ : true, __constructs__ : ["GOAL_INVADE_HOST","GOAL_INVADE_HUMAN","GOAL_EVOLVE_PROBE","GOAL_EVOLVE_ORGAN","GOAL_GROW_ORGAN","GOAL_EVOLVE_CAMO","GOAL_GROW_CAMO","GOAL_EVOLVE_DOPAMINE","GOAL_EVOLVE_MICROHABITAT","GOAL_CREATE_HABITAT","GOAL_PUT_BIOMINERAL","GOAL_PUT_ASSIMILATION","GOAL_PROBE_BRAIN","GOAL_LEARN_ITEMS","GOAL_PROBE_BRAIN_ADVANCED","GOAL_LEARN_SKILLS","GOAL_LEARN_SOCIETY","GOAL_TRAVEL_EVENT","GOAL_LEARN_CLUE","GOAL_LEARN_NPC","GOAL_USE_COMPUTER","SCENARIO_ALIEN_FIND_SHIP","SCENARIO_ALIEN_SAVE_ALIEN","SCENARIO_ALIEN_ENTER_SHIP","SCENARIO_ALIEN_MISSION_ABDUCTION","SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP","SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP","SCENARIO_ALIEN_MISSION_INFILTRATION","SCENARIO_ALIEN_MISSION_RESEARCH"] };
-_$Goal.GOAL_INVADE_HOST = ["GOAL_INVADE_HOST",0];
+var _$Goal = $hxClasses["_Goal"] = { __ename__ : true, __constructs__ : ["GOAL_TUTORIAL_ALERT","GOAL_TUTORIAL_BODY","GOAL_TUTORIAL_BODY_SEWERS","GOAL_TUTORIAL_ENERGY","GOAL_INVADE_HOST","GOAL_INVADE_HUMAN","GOAL_EVOLVE_PROBE","GOAL_EVOLVE_ORGAN","GOAL_GROW_ORGAN","GOAL_EVOLVE_CAMO","GOAL_GROW_CAMO","GOAL_EVOLVE_DOPAMINE","GOAL_EVOLVE_MICROHABITAT","GOAL_CREATE_HABITAT","GOAL_PUT_BIOMINERAL","GOAL_PUT_ASSIMILATION","GOAL_PROBE_BRAIN","GOAL_LEARN_ITEMS","GOAL_PROBE_BRAIN_ADVANCED","GOAL_LEARN_SKILLS","GOAL_LEARN_SOCIETY","GOAL_TRAVEL_EVENT","GOAL_LEARN_CLUE","GOAL_LEARN_NPC","GOAL_USE_COMPUTER","SCENARIO_ALIEN_FIND_SHIP","SCENARIO_ALIEN_SAVE_ALIEN","SCENARIO_ALIEN_ENTER_SHIP","SCENARIO_ALIEN_MISSION_ABDUCTION","SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP","SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP","SCENARIO_ALIEN_MISSION_INFILTRATION","SCENARIO_ALIEN_MISSION_RESEARCH"] };
+_$Goal.GOAL_TUTORIAL_ALERT = ["GOAL_TUTORIAL_ALERT",0];
+_$Goal.GOAL_TUTORIAL_ALERT.toString = $estr;
+_$Goal.GOAL_TUTORIAL_ALERT.__enum__ = _$Goal;
+_$Goal.GOAL_TUTORIAL_BODY = ["GOAL_TUTORIAL_BODY",1];
+_$Goal.GOAL_TUTORIAL_BODY.toString = $estr;
+_$Goal.GOAL_TUTORIAL_BODY.__enum__ = _$Goal;
+_$Goal.GOAL_TUTORIAL_BODY_SEWERS = ["GOAL_TUTORIAL_BODY_SEWERS",2];
+_$Goal.GOAL_TUTORIAL_BODY_SEWERS.toString = $estr;
+_$Goal.GOAL_TUTORIAL_BODY_SEWERS.__enum__ = _$Goal;
+_$Goal.GOAL_TUTORIAL_ENERGY = ["GOAL_TUTORIAL_ENERGY",3];
+_$Goal.GOAL_TUTORIAL_ENERGY.toString = $estr;
+_$Goal.GOAL_TUTORIAL_ENERGY.__enum__ = _$Goal;
+_$Goal.GOAL_INVADE_HOST = ["GOAL_INVADE_HOST",4];
 _$Goal.GOAL_INVADE_HOST.toString = $estr;
 _$Goal.GOAL_INVADE_HOST.__enum__ = _$Goal;
-_$Goal.GOAL_INVADE_HUMAN = ["GOAL_INVADE_HUMAN",1];
+_$Goal.GOAL_INVADE_HUMAN = ["GOAL_INVADE_HUMAN",5];
 _$Goal.GOAL_INVADE_HUMAN.toString = $estr;
 _$Goal.GOAL_INVADE_HUMAN.__enum__ = _$Goal;
-_$Goal.GOAL_EVOLVE_PROBE = ["GOAL_EVOLVE_PROBE",2];
+_$Goal.GOAL_EVOLVE_PROBE = ["GOAL_EVOLVE_PROBE",6];
 _$Goal.GOAL_EVOLVE_PROBE.toString = $estr;
 _$Goal.GOAL_EVOLVE_PROBE.__enum__ = _$Goal;
-_$Goal.GOAL_EVOLVE_ORGAN = ["GOAL_EVOLVE_ORGAN",3];
+_$Goal.GOAL_EVOLVE_ORGAN = ["GOAL_EVOLVE_ORGAN",7];
 _$Goal.GOAL_EVOLVE_ORGAN.toString = $estr;
 _$Goal.GOAL_EVOLVE_ORGAN.__enum__ = _$Goal;
-_$Goal.GOAL_GROW_ORGAN = ["GOAL_GROW_ORGAN",4];
+_$Goal.GOAL_GROW_ORGAN = ["GOAL_GROW_ORGAN",8];
 _$Goal.GOAL_GROW_ORGAN.toString = $estr;
 _$Goal.GOAL_GROW_ORGAN.__enum__ = _$Goal;
-_$Goal.GOAL_EVOLVE_CAMO = ["GOAL_EVOLVE_CAMO",5];
+_$Goal.GOAL_EVOLVE_CAMO = ["GOAL_EVOLVE_CAMO",9];
 _$Goal.GOAL_EVOLVE_CAMO.toString = $estr;
 _$Goal.GOAL_EVOLVE_CAMO.__enum__ = _$Goal;
-_$Goal.GOAL_GROW_CAMO = ["GOAL_GROW_CAMO",6];
+_$Goal.GOAL_GROW_CAMO = ["GOAL_GROW_CAMO",10];
 _$Goal.GOAL_GROW_CAMO.toString = $estr;
 _$Goal.GOAL_GROW_CAMO.__enum__ = _$Goal;
-_$Goal.GOAL_EVOLVE_DOPAMINE = ["GOAL_EVOLVE_DOPAMINE",7];
+_$Goal.GOAL_EVOLVE_DOPAMINE = ["GOAL_EVOLVE_DOPAMINE",11];
 _$Goal.GOAL_EVOLVE_DOPAMINE.toString = $estr;
 _$Goal.GOAL_EVOLVE_DOPAMINE.__enum__ = _$Goal;
-_$Goal.GOAL_EVOLVE_MICROHABITAT = ["GOAL_EVOLVE_MICROHABITAT",8];
+_$Goal.GOAL_EVOLVE_MICROHABITAT = ["GOAL_EVOLVE_MICROHABITAT",12];
 _$Goal.GOAL_EVOLVE_MICROHABITAT.toString = $estr;
 _$Goal.GOAL_EVOLVE_MICROHABITAT.__enum__ = _$Goal;
-_$Goal.GOAL_CREATE_HABITAT = ["GOAL_CREATE_HABITAT",9];
+_$Goal.GOAL_CREATE_HABITAT = ["GOAL_CREATE_HABITAT",13];
 _$Goal.GOAL_CREATE_HABITAT.toString = $estr;
 _$Goal.GOAL_CREATE_HABITAT.__enum__ = _$Goal;
-_$Goal.GOAL_PUT_BIOMINERAL = ["GOAL_PUT_BIOMINERAL",10];
+_$Goal.GOAL_PUT_BIOMINERAL = ["GOAL_PUT_BIOMINERAL",14];
 _$Goal.GOAL_PUT_BIOMINERAL.toString = $estr;
 _$Goal.GOAL_PUT_BIOMINERAL.__enum__ = _$Goal;
-_$Goal.GOAL_PUT_ASSIMILATION = ["GOAL_PUT_ASSIMILATION",11];
+_$Goal.GOAL_PUT_ASSIMILATION = ["GOAL_PUT_ASSIMILATION",15];
 _$Goal.GOAL_PUT_ASSIMILATION.toString = $estr;
 _$Goal.GOAL_PUT_ASSIMILATION.__enum__ = _$Goal;
-_$Goal.GOAL_PROBE_BRAIN = ["GOAL_PROBE_BRAIN",12];
+_$Goal.GOAL_PROBE_BRAIN = ["GOAL_PROBE_BRAIN",16];
 _$Goal.GOAL_PROBE_BRAIN.toString = $estr;
 _$Goal.GOAL_PROBE_BRAIN.__enum__ = _$Goal;
-_$Goal.GOAL_LEARN_ITEMS = ["GOAL_LEARN_ITEMS",13];
+_$Goal.GOAL_LEARN_ITEMS = ["GOAL_LEARN_ITEMS",17];
 _$Goal.GOAL_LEARN_ITEMS.toString = $estr;
 _$Goal.GOAL_LEARN_ITEMS.__enum__ = _$Goal;
-_$Goal.GOAL_PROBE_BRAIN_ADVANCED = ["GOAL_PROBE_BRAIN_ADVANCED",14];
+_$Goal.GOAL_PROBE_BRAIN_ADVANCED = ["GOAL_PROBE_BRAIN_ADVANCED",18];
 _$Goal.GOAL_PROBE_BRAIN_ADVANCED.toString = $estr;
 _$Goal.GOAL_PROBE_BRAIN_ADVANCED.__enum__ = _$Goal;
-_$Goal.GOAL_LEARN_SKILLS = ["GOAL_LEARN_SKILLS",15];
+_$Goal.GOAL_LEARN_SKILLS = ["GOAL_LEARN_SKILLS",19];
 _$Goal.GOAL_LEARN_SKILLS.toString = $estr;
 _$Goal.GOAL_LEARN_SKILLS.__enum__ = _$Goal;
-_$Goal.GOAL_LEARN_SOCIETY = ["GOAL_LEARN_SOCIETY",16];
+_$Goal.GOAL_LEARN_SOCIETY = ["GOAL_LEARN_SOCIETY",20];
 _$Goal.GOAL_LEARN_SOCIETY.toString = $estr;
 _$Goal.GOAL_LEARN_SOCIETY.__enum__ = _$Goal;
-_$Goal.GOAL_TRAVEL_EVENT = ["GOAL_TRAVEL_EVENT",17];
+_$Goal.GOAL_TRAVEL_EVENT = ["GOAL_TRAVEL_EVENT",21];
 _$Goal.GOAL_TRAVEL_EVENT.toString = $estr;
 _$Goal.GOAL_TRAVEL_EVENT.__enum__ = _$Goal;
-_$Goal.GOAL_LEARN_CLUE = ["GOAL_LEARN_CLUE",18];
+_$Goal.GOAL_LEARN_CLUE = ["GOAL_LEARN_CLUE",22];
 _$Goal.GOAL_LEARN_CLUE.toString = $estr;
 _$Goal.GOAL_LEARN_CLUE.__enum__ = _$Goal;
-_$Goal.GOAL_LEARN_NPC = ["GOAL_LEARN_NPC",19];
+_$Goal.GOAL_LEARN_NPC = ["GOAL_LEARN_NPC",23];
 _$Goal.GOAL_LEARN_NPC.toString = $estr;
 _$Goal.GOAL_LEARN_NPC.__enum__ = _$Goal;
-_$Goal.GOAL_USE_COMPUTER = ["GOAL_USE_COMPUTER",20];
+_$Goal.GOAL_USE_COMPUTER = ["GOAL_USE_COMPUTER",24];
 _$Goal.GOAL_USE_COMPUTER.toString = $estr;
 _$Goal.GOAL_USE_COMPUTER.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_FIND_SHIP = ["SCENARIO_ALIEN_FIND_SHIP",21];
+_$Goal.SCENARIO_ALIEN_FIND_SHIP = ["SCENARIO_ALIEN_FIND_SHIP",25];
 _$Goal.SCENARIO_ALIEN_FIND_SHIP.toString = $estr;
 _$Goal.SCENARIO_ALIEN_FIND_SHIP.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_SAVE_ALIEN = ["SCENARIO_ALIEN_SAVE_ALIEN",22];
+_$Goal.SCENARIO_ALIEN_SAVE_ALIEN = ["SCENARIO_ALIEN_SAVE_ALIEN",26];
 _$Goal.SCENARIO_ALIEN_SAVE_ALIEN.toString = $estr;
 _$Goal.SCENARIO_ALIEN_SAVE_ALIEN.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_ENTER_SHIP = ["SCENARIO_ALIEN_ENTER_SHIP",23];
+_$Goal.SCENARIO_ALIEN_ENTER_SHIP = ["SCENARIO_ALIEN_ENTER_SHIP",27];
 _$Goal.SCENARIO_ALIEN_ENTER_SHIP.toString = $estr;
 _$Goal.SCENARIO_ALIEN_ENTER_SHIP.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION = ["SCENARIO_ALIEN_MISSION_ABDUCTION",24];
+_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION = ["SCENARIO_ALIEN_MISSION_ABDUCTION",28];
 _$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION.toString = $estr;
 _$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP = ["SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP",25];
+_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP = ["SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP",29];
 _$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP.toString = $estr;
 _$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP = ["SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP",26];
+_$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP = ["SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP",30];
 _$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP.toString = $estr;
 _$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION = ["SCENARIO_ALIEN_MISSION_INFILTRATION",27];
+_$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION = ["SCENARIO_ALIEN_MISSION_INFILTRATION",31];
 _$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION.toString = $estr;
 _$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_MISSION_RESEARCH = ["SCENARIO_ALIEN_MISSION_RESEARCH",28];
+_$Goal.SCENARIO_ALIEN_MISSION_RESEARCH = ["SCENARIO_ALIEN_MISSION_RESEARCH",32];
 _$Goal.SCENARIO_ALIEN_MISSION_RESEARCH.toString = $estr;
 _$Goal.SCENARIO_ALIEN_MISSION_RESEARCH.__enum__ = _$Goal;
-_$Goal.__empty_constructs__ = [_$Goal.GOAL_INVADE_HOST,_$Goal.GOAL_INVADE_HUMAN,_$Goal.GOAL_EVOLVE_PROBE,_$Goal.GOAL_EVOLVE_ORGAN,_$Goal.GOAL_GROW_ORGAN,_$Goal.GOAL_EVOLVE_CAMO,_$Goal.GOAL_GROW_CAMO,_$Goal.GOAL_EVOLVE_DOPAMINE,_$Goal.GOAL_EVOLVE_MICROHABITAT,_$Goal.GOAL_CREATE_HABITAT,_$Goal.GOAL_PUT_BIOMINERAL,_$Goal.GOAL_PUT_ASSIMILATION,_$Goal.GOAL_PROBE_BRAIN,_$Goal.GOAL_LEARN_ITEMS,_$Goal.GOAL_PROBE_BRAIN_ADVANCED,_$Goal.GOAL_LEARN_SKILLS,_$Goal.GOAL_LEARN_SOCIETY,_$Goal.GOAL_TRAVEL_EVENT,_$Goal.GOAL_LEARN_CLUE,_$Goal.GOAL_LEARN_NPC,_$Goal.GOAL_USE_COMPUTER,_$Goal.SCENARIO_ALIEN_FIND_SHIP,_$Goal.SCENARIO_ALIEN_SAVE_ALIEN,_$Goal.SCENARIO_ALIEN_ENTER_SHIP,_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION,_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP,_$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP,_$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION,_$Goal.SCENARIO_ALIEN_MISSION_RESEARCH];
+_$Goal.__empty_constructs__ = [_$Goal.GOAL_TUTORIAL_ALERT,_$Goal.GOAL_TUTORIAL_BODY,_$Goal.GOAL_TUTORIAL_BODY_SEWERS,_$Goal.GOAL_TUTORIAL_ENERGY,_$Goal.GOAL_INVADE_HOST,_$Goal.GOAL_INVADE_HUMAN,_$Goal.GOAL_EVOLVE_PROBE,_$Goal.GOAL_EVOLVE_ORGAN,_$Goal.GOAL_GROW_ORGAN,_$Goal.GOAL_EVOLVE_CAMO,_$Goal.GOAL_GROW_CAMO,_$Goal.GOAL_EVOLVE_DOPAMINE,_$Goal.GOAL_EVOLVE_MICROHABITAT,_$Goal.GOAL_CREATE_HABITAT,_$Goal.GOAL_PUT_BIOMINERAL,_$Goal.GOAL_PUT_ASSIMILATION,_$Goal.GOAL_PROBE_BRAIN,_$Goal.GOAL_LEARN_ITEMS,_$Goal.GOAL_PROBE_BRAIN_ADVANCED,_$Goal.GOAL_LEARN_SKILLS,_$Goal.GOAL_LEARN_SOCIETY,_$Goal.GOAL_TRAVEL_EVENT,_$Goal.GOAL_LEARN_CLUE,_$Goal.GOAL_LEARN_NPC,_$Goal.GOAL_USE_COMPUTER,_$Goal.SCENARIO_ALIEN_FIND_SHIP,_$Goal.SCENARIO_ALIEN_SAVE_ALIEN,_$Goal.SCENARIO_ALIEN_ENTER_SHIP,_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION,_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP,_$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP,_$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION,_$Goal.SCENARIO_ALIEN_MISSION_RESEARCH];
 var _$Improv = $hxClasses["_Improv"] = { __ename__ : true, __constructs__ : ["IMP_HOST_RELEASE","IMP_DECAY_ACCEL","IMP_CAMO_LAYER","IMP_DOPAMINE","IMP_BRAIN_PROBE","IMP_PROT_COVER","IMP_MUSCLE","IMP_WOUND_REGEN","IMP_HEALTH","IMP_ENERGY","IMP_HARDEN_GRIP","IMP_ATTACH","IMP_REINFORCE","IMP_ACID_SPIT","IMP_SLIME_SPIT","IMP_PARALYSIS_SPIT","IMP_PANIC_GAS","IMP_PARALYSIS_GAS","IMP_MICROHABITAT","IMP_BIOMINERAL","IMP_ASSIMILATION"] };
 _$Improv.IMP_HOST_RELEASE = ["IMP_HOST_RELEASE",0];
 _$Improv.IMP_HOST_RELEASE.toString = $estr;
@@ -4879,6 +4936,17 @@ ai_AI.prototype = {
 		this.stateTime = 0;
 		this.reason = vreason;
 		if(this.state == _$AIState.AI_STATE_ALERT) {
+			if(this.isHuman && vreason != ai__$AIStateChangeReason.REASON_ATTACH) {
+				this.game.goals.complete(_$Goal.GOAL_TUTORIAL_ALERT);
+			}
+			if(this.isHuman) {
+				var _this = this.game.scene;
+				if(_this.game.location == _$LocationType.LOCATION_AREA) {
+					_this.game.scene.area.clearPath(true);
+				} else if(_this.game.location == _$LocationType.LOCATION_REGION) {
+					_this.game.scene.region.clearPath();
+				}
+			}
 			this.timers.alert = ai_AI.ALERTED_TIMER;
 			this.wasAlerted = true;
 		}
@@ -11615,7 +11683,7 @@ game_ConsoleGame.prototype = {
 	}
 	,configOptionCommand: function(arr) {
 		if(arr.length == 1) {
-			this.game.config.dump();
+			this.game.config.dump(true);
 			return;
 		}
 		if(arr.length < 3) {
@@ -12506,17 +12574,32 @@ game_EvolutionManager.prototype = {
 				this.player.host.set_health(0);
 				var _this1 = this.player;
 				if(_this1.game.location == _$LocationType.LOCATION_AREA) {
+					if(_this1.game.player.host.isHuman) {
+						_this1.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY);
+					}
 					var _this2 = _this1.game.playerArea;
-					_this2.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+					if(_this2.game.scene._state != _$UIState.UISTATE_MESSAGE) {
+						_this2.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+					}
 					_this2.player.host.die();
 					_this2.onDetach();
 				} else if(_this1.game.location == _$LocationType.LOCATION_REGION) {
+					if(_this1.game.player.host.isHuman) {
+						_this1.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY_SEWERS);
+						_this1.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY,true);
+					}
 					var _this3 = _this1.game.playerRegion;
 					_this3.player.state = _$PlayerState.PLR_STATE_PARASITE;
 					_this3.entity.setMask(null);
 					_this3.entity.set_tile(_this3.game.scene.entityAtlas[0][Const.ROW_PARASITE]);
 					_this3.entity.set_visible(true);
 					_this3.player.host = null;
+				}
+				var _this4 = _this1.game.scene;
+				if(_this4.game.location == _$LocationType.LOCATION_AREA) {
+					_this4.game.scene.area.clearPath(true);
+				} else if(_this4.game.location == _$LocationType.LOCATION_REGION) {
+					_this4.game.scene.region.clearPath();
 				}
 				_this1.game.log("You host has degraded completely.",null);
 				return;
@@ -12778,7 +12861,7 @@ $hxClasses["game.Game"] = game_Game;
 game_Game.__name__ = ["game","Game"];
 game_Game.prototype = {
 	init: function() {
-		var s = "Parasite v" + "0.5" + " (build: " + "20190407-366" + ")";
+		var s = "Parasite v" + "0.5" + " (build: " + "20190409-373" + ")";
 		this.log(s);
 		this.log("<font face=\"10\">Sinister reflections might shed some light on the nature of perception.</font>",_$TextColor.COLOR_DEBUG);
 		this.turns = 0;
@@ -12798,7 +12881,13 @@ game_Game.prototype = {
 		this.goals = new game_Goals(this);
 		this.timeline.init();
 		this.message("You are alone. You are scared. You need to find a host or you will die soon.");
-		this.goals.receive(_$Goal.GOAL_INVADE_HOST);
+		var goal = const_Goals.map.keys();
+		while(goal.hasNext()) {
+			var goal1 = goal.next();
+			if(const_Goals.map.get(goal1).isStarting) {
+				this.goals.receive(goal1);
+			}
+		}
 		this.region = this.world._list.get(0);
 		var _this = this.timeline;
 		var event = _this._eventsMap.get(_this.scenario.playerStartEvent);
@@ -12919,7 +13008,7 @@ game_Game.prototype = {
 			if(condition == "noHost") {
 				finishText = "You cannot survive without a host for long.";
 			} else if(condition == "noHealth") {
-				finishText = "You have succumbed to injuries.";
+				finishText = "You have succumbed to injuries. It's not wise to go into the direct confrontation.";
 			}
 			this.log(finishText);
 		} else {
@@ -12960,6 +13049,9 @@ game_Game.prototype = {
 	,debug: function(s) {
 	}
 	,log: function(s,col) {
+		if(this.messageList == null) {
+			return;
+		}
 		if(col == null) {
 			col = _$TextColor.COLOR_DEFAULT;
 		}
@@ -14155,15 +14247,25 @@ game_Player.prototype = {
 				energy1 = -time;
 			}
 			var delta1 = energy1;
+			var old = this.host.energy;
 			var _g2 = this.host;
 			_g2.set_energy(_g2.energy + delta1);
 			if(this.host.energy <= 0) {
 				if(this.game.location == _$LocationType.LOCATION_AREA) {
+					if(this.game.player.host.isHuman) {
+						this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY);
+					}
 					var _this = this.game.playerArea;
-					_this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+					if(_this.game.scene._state != _$UIState.UISTATE_MESSAGE) {
+						_this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+					}
 					_this.player.host.die();
 					_this.onDetach();
 				} else if(this.game.location == _$LocationType.LOCATION_REGION) {
+					if(this.game.player.host.isHuman) {
+						this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY_SEWERS);
+						this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY,true);
+					}
 					var _this1 = this.game.playerRegion;
 					_this1.player.state = _$PlayerState.PLR_STATE_PARASITE;
 					_this1.entity.setMask(null);
@@ -14171,7 +14273,15 @@ game_Player.prototype = {
 					_this1.entity.set_visible(true);
 					_this1.player.host = null;
 				}
+				var _this2 = this.game.scene;
+				if(_this2.game.location == _$LocationType.LOCATION_AREA) {
+					_this2.game.scene.area.clearPath(true);
+				} else if(_this2.game.location == _$LocationType.LOCATION_REGION) {
+					_this2.game.scene.region.clearPath();
+				}
 				this.game.log("Your host has expired. You have to find a new one.",null);
+			} else if(this.host.energy < 0.3 * this.host.maxEnergy && old >= 0.3 * this.host.maxEnergy) {
+				this.game.goals.complete(_$Goal.GOAL_TUTORIAL_ENERGY);
 			}
 		}
 		if(this.state == _$PlayerState.PLR_STATE_HOST) {
@@ -14188,9 +14298,9 @@ game_Player.prototype = {
 			var delta2 = energy2;
 			var _g3 = this;
 			_g3.set_energy(_g3.energy + delta2);
-			var _this2 = this.host.organs;
-			_this2.turnGrowth(time);
-			_this2.turnActivity(time);
+			var _this3 = this.host.organs;
+			_this3.turnGrowth(time);
+			_this3.turnActivity(time);
 			if(this.host.type == "human" && this.evolutionManager.getLevel(_$Improv.IMP_BRAIN_PROBE) > 0) {
 				this.skills.increase(_$Skill.KNOW_SOCIETY,0.1 * this.host.get_intellect() * time);
 			}
@@ -14204,17 +14314,32 @@ game_Player.prototype = {
 	}
 	,onHostDeath: function(msg) {
 		if(this.game.location == _$LocationType.LOCATION_AREA) {
+			if(this.game.player.host.isHuman) {
+				this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY);
+			}
 			var _this = this.game.playerArea;
-			_this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+			if(_this.game.scene._state != _$UIState.UISTATE_MESSAGE) {
+				_this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+			}
 			_this.player.host.die();
 			_this.onDetach();
 		} else if(this.game.location == _$LocationType.LOCATION_REGION) {
+			if(this.game.player.host.isHuman) {
+				this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY_SEWERS);
+				this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY,true);
+			}
 			var _this1 = this.game.playerRegion;
 			_this1.player.state = _$PlayerState.PLR_STATE_PARASITE;
 			_this1.entity.setMask(null);
 			_this1.entity.set_tile(_this1.game.scene.entityAtlas[0][Const.ROW_PARASITE]);
 			_this1.entity.set_visible(true);
 			_this1.player.host = null;
+		}
+		var _this2 = this.game.scene;
+		if(_this2.game.location == _$LocationType.LOCATION_AREA) {
+			_this2.game.scene.area.clearPath(true);
+		} else if(_this2.game.location == _$LocationType.LOCATION_REGION) {
+			_this2.game.scene.region.clearPath();
 		}
 		this.game.log(msg,null);
 	}
@@ -14453,11 +14578,39 @@ game_PlayerArea.prototype = {
 	}
 	,postAction: function() {
 		if(this.get_state() == _$PlayerState.PLR_STATE_HOST && (this.player.host.state == _$AIState.AI_STATE_DEAD || this.player.host.energy <= 0)) {
-			this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
-			this.player.host.die();
-			this.onDetach();
-			this.game.log("Your host has expired. You have to find a new one.",null);
-			this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+			var _this = this.game.player;
+			if(_this.game.location == _$LocationType.LOCATION_AREA) {
+				if(_this.game.player.host.isHuman) {
+					_this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY);
+				}
+				var _this1 = _this.game.playerArea;
+				if(_this1.game.scene._state != _$UIState.UISTATE_MESSAGE) {
+					_this1.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+				}
+				_this1.player.host.die();
+				_this1.onDetach();
+			} else if(_this.game.location == _$LocationType.LOCATION_REGION) {
+				if(_this.game.player.host.isHuman) {
+					_this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY_SEWERS);
+					_this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY,true);
+				}
+				var _this2 = _this.game.playerRegion;
+				_this2.player.state = _$PlayerState.PLR_STATE_PARASITE;
+				_this2.entity.setMask(null);
+				_this2.entity.set_tile(_this2.game.scene.entityAtlas[0][Const.ROW_PARASITE]);
+				_this2.entity.set_visible(true);
+				_this2.player.host = null;
+			}
+			var _this3 = _this.game.scene;
+			if(_this3.game.location == _$LocationType.LOCATION_AREA) {
+				_this3.game.scene.area.clearPath(true);
+			} else if(_this3.game.location == _$LocationType.LOCATION_REGION) {
+				_this3.game.scene.region.clearPath();
+			}
+			_this.game.log("Your host has expired. You have to find a new one.",null);
+			if(this.game.scene._state != _$UIState.UISTATE_MESSAGE) {
+				this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+			}
 		}
 		if(this.get_state() == _$PlayerState.PLR_STATE_PARASITE && this.player.energy <= 0) {
 			this.game.finish("lose","noHost");
@@ -14469,17 +14622,17 @@ game_PlayerArea.prototype = {
 		this.ap--;
 		if(this.ap > 0) {
 			if(this.game.location == _$LocationType.LOCATION_AREA) {
-				var _this = this.game.area;
-				if(_this.game.player.state == _$PlayerState.PLR_STATE_HOST) {
-					_this.updateVisibilityHost();
+				var _this4 = this.game.area;
+				if(_this4.game.player.state == _$PlayerState.PLR_STATE_HOST) {
+					_this4.updateVisibilityHost();
 				} else {
-					_this.updateVisibilityParasite();
+					_this4.updateVisibilityParasite();
 				}
-				var _this1 = _this.game.scene.area;
-				if(_this1.game.player.state == _$PlayerState.PLR_STATE_HOST) {
-					_this1.updateVisibilityHost();
+				var _this5 = _this4.game.scene.area;
+				if(_this5.game.player.state == _$PlayerState.PLR_STATE_HOST) {
+					_this5.updateVisibilityHost();
 				} else {
-					_this1.updateVisibilityParasite();
+					_this5.updateVisibilityParasite();
 				}
 			}
 			this.game.scene.hud.update();
@@ -14487,17 +14640,17 @@ game_PlayerArea.prototype = {
 		}
 		if(this.game.location == _$LocationType.LOCATION_AREA) {
 			this.game.turn();
-			var _this2 = this.game.area;
-			if(_this2.game.player.state == _$PlayerState.PLR_STATE_HOST) {
-				_this2.updateVisibilityHost();
+			var _this6 = this.game.area;
+			if(_this6.game.player.state == _$PlayerState.PLR_STATE_HOST) {
+				_this6.updateVisibilityHost();
 			} else {
-				_this2.updateVisibilityParasite();
+				_this6.updateVisibilityParasite();
 			}
-			var _this3 = _this2.game.scene.area;
-			if(_this3.game.player.state == _$PlayerState.PLR_STATE_HOST) {
-				_this3.updateVisibilityHost();
+			var _this7 = _this6.game.scene.area;
+			if(_this7.game.player.state == _$PlayerState.PLR_STATE_HOST) {
+				_this7.updateVisibilityHost();
 			} else {
-				_this3.updateVisibilityParasite();
+				_this7.updateVisibilityParasite();
 			}
 		}
 		this.game.scene.hud.update();
@@ -14871,6 +15024,9 @@ game_PlayerArea.prototype = {
 		}
 		this.nextPath();
 	}
+	,clearPath: function() {
+		this.path = null;
+	}
 	,nextPath: function() {
 		if(this.path == null || (new Date().getTime() / 1000 - this.pathTS) * 1000.0 < this.game.config.pathDelay) {
 			return false;
@@ -14882,7 +15038,7 @@ game_PlayerArea.prototype = {
 			this.path = null;
 			return true;
 		}
-		if(this.path.length == 0) {
+		if(this.path != null && this.path.length == 0) {
 			this.path = null;
 		}
 		return true;
@@ -14898,6 +15054,12 @@ game_PlayerArea.prototype = {
 		}
 	}
 	,onDamageHost: function(damage) {
+		var _this = this.game.scene;
+		if(_this.game.location == _$LocationType.LOCATION_AREA) {
+			_this.game.scene.area.clearPath(true);
+		} else if(_this.game.location == _$LocationType.LOCATION_REGION) {
+			_this.game.scene.region.clearPath();
+		}
 		this.player.host.onDamage(damage);
 		if(this.player.host.state == _$AIState.AI_STATE_DEAD) {
 			this.onDetach();
@@ -14920,7 +15082,9 @@ game_PlayerArea.prototype = {
 		this.player.host = null;
 	}
 	,onHostDeath: function() {
-		this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+		if(this.game.scene._state != _$UIState.UISTATE_MESSAGE) {
+			this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+		}
 		this.player.host.die();
 		this.onDetach();
 	}
@@ -15033,13 +15197,39 @@ game_PlayerRegion.prototype = {
 	,postAction: function() {
 		if(this.player.state == _$PlayerState.PLR_STATE_HOST) {
 			if(this.player.host.energy <= 0) {
-				this.player.state = _$PlayerState.PLR_STATE_PARASITE;
-				this.entity.setMask(null);
-				this.entity.set_tile(this.game.scene.entityAtlas[0][Const.ROW_PARASITE]);
-				this.entity.set_visible(true);
-				this.player.host = null;
-				this.game.log("Your host has expired somewhere in the sewers. You have to find a new one.");
-				this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+				var _this = this.game.player;
+				if(_this.game.location == _$LocationType.LOCATION_AREA) {
+					if(_this.game.player.host.isHuman) {
+						_this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY);
+					}
+					var _this1 = _this.game.playerArea;
+					if(_this1.game.scene._state != _$UIState.UISTATE_MESSAGE) {
+						_this1.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+					}
+					_this1.player.host.die();
+					_this1.onDetach();
+				} else if(_this.game.location == _$LocationType.LOCATION_REGION) {
+					if(_this.game.player.host.isHuman) {
+						_this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY_SEWERS);
+						_this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY,true);
+					}
+					var _this2 = _this.game.playerRegion;
+					_this2.player.state = _$PlayerState.PLR_STATE_PARASITE;
+					_this2.entity.setMask(null);
+					_this2.entity.set_tile(_this2.game.scene.entityAtlas[0][Const.ROW_PARASITE]);
+					_this2.entity.set_visible(true);
+					_this2.player.host = null;
+				}
+				var _this3 = _this.game.scene;
+				if(_this3.game.location == _$LocationType.LOCATION_AREA) {
+					_this3.game.scene.area.clearPath(true);
+				} else if(_this3.game.location == _$LocationType.LOCATION_REGION) {
+					_this3.game.scene.region.clearPath();
+				}
+				_this.game.log("Your host has expired somewhere in the sewers. You have to find a new one.",null);
+				if(this.game.scene._state != _$UIState.UISTATE_MESSAGE) {
+					this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+				}
 			}
 		}
 		if(this.player.energy == 0) {
@@ -15088,13 +15278,39 @@ game_PlayerRegion.prototype = {
 		}
 		if(this.player.state == _$PlayerState.PLR_STATE_HOST) {
 			if(this.player.host.energy <= 0) {
-				this.player.state = _$PlayerState.PLR_STATE_PARASITE;
-				this.entity.setMask(null);
-				this.entity.set_tile(this.game.scene.entityAtlas[0][Const.ROW_PARASITE]);
-				this.entity.set_visible(true);
-				this.player.host = null;
-				this.game.log("Your host has expired somewhere in the sewers. You have to find a new one.");
-				this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+				var _this = this.game.player;
+				if(_this.game.location == _$LocationType.LOCATION_AREA) {
+					if(_this.game.player.host.isHuman) {
+						_this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY);
+					}
+					var _this1 = _this.game.playerArea;
+					if(_this1.game.scene._state != _$UIState.UISTATE_MESSAGE) {
+						_this1.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+					}
+					_this1.player.host.die();
+					_this1.onDetach();
+				} else if(_this.game.location == _$LocationType.LOCATION_REGION) {
+					if(_this.game.player.host.isHuman) {
+						_this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY_SEWERS);
+						_this.game.goals.complete(_$Goal.GOAL_TUTORIAL_BODY,true);
+					}
+					var _this2 = _this.game.playerRegion;
+					_this2.player.state = _$PlayerState.PLR_STATE_PARASITE;
+					_this2.entity.setMask(null);
+					_this2.entity.set_tile(_this2.game.scene.entityAtlas[0][Const.ROW_PARASITE]);
+					_this2.entity.set_visible(true);
+					_this2.player.host = null;
+				}
+				var _this3 = _this.game.scene;
+				if(_this3.game.location == _$LocationType.LOCATION_AREA) {
+					_this3.game.scene.area.clearPath(true);
+				} else if(_this3.game.location == _$LocationType.LOCATION_REGION) {
+					_this3.game.scene.region.clearPath();
+				}
+				_this.game.log("Your host has expired somewhere in the sewers. You have to find a new one.",null);
+				if(this.game.scene._state != _$UIState.UISTATE_MESSAGE) {
+					this.game.scene.set_state(_$UIState.UISTATE_DEFAULT);
+				}
 			}
 		}
 		var nx = this.x + dx;
@@ -47138,6 +47354,11 @@ haxe_ds_BalancedTree.prototype = {
 		this.iteratorLoop(this.root,ret);
 		return HxOverrides.iter(ret);
 	}
+	,keys: function() {
+		var ret = [];
+		this.keysLoop(this.root,ret);
+		return HxOverrides.iter(ret);
+	}
 	,setLoop: function(k,v,node) {
 		if(node == null) {
 			return new haxe_ds_TreeNode(null,k,v,null);
@@ -47171,6 +47392,13 @@ haxe_ds_BalancedTree.prototype = {
 			this.iteratorLoop(node.left,acc);
 			acc.push(node.value);
 			this.iteratorLoop(node.right,acc);
+		}
+	}
+	,keysLoop: function(node,acc) {
+		if(node != null) {
+			this.keysLoop(node.left,acc);
+			acc.push(node.key);
+			this.keysLoop(node.right,acc);
 		}
 	}
 	,merge: function(t1,t2) {
@@ -64472,6 +64700,9 @@ hxsl_Eval.prototype = {
 					d = hxsl_TExprDef.TBinop(op,e12,e22);
 				}
 				break;
+			case 4:case 20:case 21:
+				d = hxsl_TExprDef.TBinop(op,e12,e22);
+				break;
 			case 5:
 				var _g7 = e22.e;
 				var _g16 = e12.e;
@@ -65315,9 +65546,6 @@ hxsl_Eval.prototype = {
 				} else {
 					d = hxsl_TExprDef.TBinop(op,e12,e22);
 				}
-				break;
-			case 4:case 20:case 21:
-				d = hxsl_TExprDef.TBinop(op,e12,e22);
 				break;
 			case 22:
 				throw new js__$Boot_HaxeError("assert");
@@ -72055,7 +72283,9 @@ ui_UIWindow.prototype = {
 		b.x = x > 0 ? x : (this.width - tile1.width) / 2 | 0;
 		b.posChanged = true;
 		b.y = y;
-		b.set_cursor(this.game.scene.mouse.atlas[ui_Mouse.CURSOR_ARROW]);
+		if(this.game.config.mouseEnabled) {
+			b.set_cursor(this.game.scene.mouse.atlas[ui_Mouse.CURSOR_ARROW]);
+		}
 		b.onPush = function(e) {
 			img.set_currentFrame(2);
 		};
@@ -72293,7 +72523,7 @@ var ui_Difficulty = function(g) {
 	var tmp1 = function() {
 		f1(0);
 	};
-	this.addButton(this.width / 2 - 3 * tile.width / 2 - 10 | 0,y,"1",tmp,tmp1,$bind(this,this.onOut));
+	this.addButton(this.width / 2 - 3 * tile.width / 2 - 10 | 0,y,"EASY",tmp,tmp1,$bind(this,this.onOut));
 	var f2 = $bind(this,this.action);
 	var tmp2 = function() {
 		f2(2);
@@ -72302,7 +72532,7 @@ var ui_Difficulty = function(g) {
 	var tmp3 = function() {
 		f3(1);
 	};
-	this.addButton((this.width / 2 - tile.width / 2 | 0) + 20,y,"2",tmp2,tmp3,$bind(this,this.onOut));
+	this.addButton((this.width / 2 - tile.width / 2 | 0) + 20,y,"NORMAL",tmp2,tmp3,$bind(this,this.onOut));
 	var f4 = $bind(this,this.action);
 	var tmp4 = function() {
 		f4(3);
@@ -72311,7 +72541,7 @@ var ui_Difficulty = function(g) {
 	var tmp5 = function() {
 		f5(2);
 	};
-	this.addButton(this.width / 2 + tile.width + 5 | 0,y,"3",tmp4,tmp5,$bind(this,this.onOut));
+	this.addButton(this.width / 2 + tile.width + 5 | 0,y,"HARD",tmp4,tmp5,$bind(this,this.onOut));
 };
 $hxClasses["ui.Difficulty"] = ui_Difficulty;
 ui_Difficulty.__name__ = ["ui","Difficulty"];
@@ -72452,7 +72682,15 @@ ui_Evolution.prototype = $extend(ui_Actions.prototype,{
 	,__class__: ui_Evolution
 });
 var ui_Finish = function(g) {
-	ui_Text.call(this,g,g.scene.win.get_width() / 3 | 0,g.scene.win.get_height() / 3 | 0);
+	var w = g.scene.win.get_width() / 3 | 0;
+	var h = g.scene.win.get_height() / 3 | 0;
+	if(w < 600) {
+		w = 600;
+	}
+	if(h < 400) {
+		h = 400;
+	}
+	ui_Text.call(this,g,w,h);
 	this.center();
 	this.text.set_textAlign(h2d_Align.Center);
 };
@@ -72579,6 +72817,14 @@ var ui_HUD = function(g) {
 	var v = this.game.scene.win.get_height() - this.game.config.fontSize - 8;
 	_this6.posChanged = true;
 	_this6.y = v;
+	this._goalsBack = new h2d_Graphics(this._container);
+	this._goals = new h2d_HtmlText(this.game.scene.font,this._goalsBack);
+	this._goals.set_maxWidth(400);
+	this._goals.set_textAlign(h2d_Align.Left);
+	var _this7 = this._goalsBack;
+	var v1 = this.game.scene.win.get_width() - 420;
+	_this7.posChanged = true;
+	_this7.x = v1;
 	this.game.scene.window.addEventTarget($bind(this,this.onEvent));
 };
 $hxClasses["ui.HUD"] = ui_HUD;
@@ -72759,6 +73005,34 @@ ui_HUD.prototype = {
 		_this1.posChanged = true;
 		_this1.y = v;
 	}
+	,updateGoals: function() {
+		var buf_b = "";
+		var _g = this.game.goals.iteratorCurrent();
+		while(_g.head != null) {
+			var val = _g.head.item;
+			_g.head = _g.head.next;
+			var g = val;
+			var info = this.game.goals.getInfo(g);
+			if(info.isHidden) {
+				continue;
+			}
+			buf_b += Std.string("<font color='#4788FF'>" + info.name + "</font><br/>");
+			buf_b += Std.string(info.note + "<br/>");
+			if(info.note2 != null) {
+				buf_b += Std.string(info.note2 + "<br/>");
+			}
+			buf_b += "<br/>";
+		}
+		this._goals.set_text(buf_b);
+		this._goalsBack.clear();
+		this._goalsBack.beginFill(2105376,0.75);
+		this._goalsBack.drawRect(0,0,this._goals.maxWidth,this._goals.get_textHeight());
+		this._goalsBack.endFill();
+		var _this = this._goalsBack;
+		var v = this.game.scene.win.get_height() - this._goals.get_textHeight() - this.game.config.fontSize - 12;
+		_this.posChanged = true;
+		_this.y = v;
+	}
 	,test: function() {
 	}
 	,updateLog: function() {
@@ -72830,6 +73104,7 @@ ui_HUD.prototype = {
 		this.updateLog();
 		this.updateHelp();
 		this.updateConsole();
+		this.updateGoals();
 	}
 	,showConsole: function() {
 		this._console.set_text("");
@@ -72924,6 +73199,21 @@ ui_Log.prototype = $extend(ui_Text.prototype,{
 	}
 	,__class__: ui_Log
 });
+var ui_LoseFocus = function(g) {
+	ui_UIWindow.call(this,g);
+	var text = this.addText(false,0,0,this.width,this.height);
+	text.set_text("LOST WINDOW FOCUS");
+	var v = (this.game.scene.win.get_height() - 20) / 2 | 0;
+	text.posChanged = true;
+	text.y = v;
+	text.set_textAlign(h2d_Align.Center);
+};
+$hxClasses["ui.LoseFocus"] = ui_LoseFocus;
+ui_LoseFocus.__name__ = ["ui","LoseFocus"];
+ui_LoseFocus.__super__ = ui_UIWindow;
+ui_LoseFocus.prototype = $extend(ui_UIWindow.prototype,{
+	__class__: ui_LoseFocus
+});
 var ui_Message = function(g) {
 	ui_UIWindow.call(this,g,700,200);
 	this.center();
@@ -72954,6 +73244,10 @@ var ui_Mouse = function(g) {
 	this.oldPos = { x : -1, y : -1};
 	this.sceneState = this.game.scene._state;
 	this.forceNextUpdate = 0;
+	this.atlas = null;
+	if(!this.game.config.mouseEnabled) {
+		return;
+	}
 	var res = hxd_Res.load("graphics/mouse64.png").toImage();
 	var bmp = res.toBitmap();
 	this.atlas = [];
@@ -72974,6 +73268,9 @@ $hxClasses["ui.Mouse"] = ui_Mouse;
 ui_Mouse.__name__ = ["ui","Mouse"];
 ui_Mouse.prototype = {
 	onClick: function(button) {
+		if(!this.game.config.mouseEnabled) {
+			return;
+		}
 		var pos = { x : (this.game.scene.cameraX + this.game.scene.get_mouseX()) / Const.TILE_SIZE | 0, y : (this.game.scene.cameraY + this.game.scene.get_mouseY()) / Const.TILE_SIZE | 0};
 		if(this.game.isFinished || this.game.scene._state != _$UIState.UISTATE_DEFAULT) {
 			return;
@@ -73013,6 +73310,9 @@ ui_Mouse.prototype = {
 	,update: function(force) {
 		if(force == null) {
 			force = false;
+		}
+		if(!this.game.config.mouseEnabled) {
+			return;
 		}
 		if(this.forceNextUpdate > 0) {
 			force = true;
@@ -73112,6 +73412,9 @@ ui_Mouse.prototype = {
 		}
 	}
 	,setCursor: function(c) {
+		if(!this.game.config.mouseEnabled) {
+			return;
+		}
 		if(this.cursor == c) {
 			return;
 		}
@@ -73839,7 +74142,11 @@ const_EvolutionConst.epCostPath = [100,200,500,1000,2000,5000];
 const_Goals.map = (function($this) {
 	var $r;
 	var _g = new haxe_ds_EnumValueMap();
-	_g.set(_$Goal.GOAL_INVADE_HOST,{ id : _$Goal.GOAL_INVADE_HOST, name : "Find and invade a host", note : "You need to find and invade a host or you will die from the lack of energy.", messageComplete : "The bipedal hosts look like a dominant life form. They may be more useful.", onComplete : function(game,player) {
+	_g.set(_$Goal.GOAL_TUTORIAL_ALERT,{ id : _$Goal.GOAL_TUTORIAL_ALERT, isHidden : true, isStarting : true, name : "", note : "", messageComplete : "That host is agitated by my appearance, I need to flee to avoid trouble."});
+	_g.set(_$Goal.GOAL_TUTORIAL_BODY,{ id : _$Goal.GOAL_TUTORIAL_BODY, isHidden : true, isStarting : true, name : "", note : "", messageComplete : "This host has expired and its body will be found. Unfortunate."});
+	_g.set(_$Goal.GOAL_TUTORIAL_BODY_SEWERS,{ id : _$Goal.GOAL_TUTORIAL_BODY_SEWERS, isHidden : true, isStarting : true, name : "", note : "", messageComplete : "This host has expired in the sewers and its body will not bring me problems."});
+	_g.set(_$Goal.GOAL_TUTORIAL_ENERGY,{ id : _$Goal.GOAL_TUTORIAL_ENERGY, isHidden : true, isStarting : true, name : "", note : "", messageComplete : "This host will soon expire, time to look for another one."});
+	_g.set(_$Goal.GOAL_INVADE_HOST,{ id : _$Goal.GOAL_INVADE_HOST, isStarting : true, name : "Find and invade a host", note : "You need to find and invade a host or you will die from the lack of energy.", messageComplete : "The bipedal hosts look like a dominant life form. They may be more useful.", onComplete : function(game,player) {
 		game.goals.receive(_$Goal.GOAL_INVADE_HUMAN);
 	}});
 	_g.set(_$Goal.GOAL_INVADE_HUMAN,{ id : _$Goal.GOAL_INVADE_HUMAN, name : "Find and invade a bipedal host", note : "You need to find and invade a bipedal host", messageComplete : "This host is intelligent. I need to evolve and understand it further.", onComplete : function(game1,player1) {
