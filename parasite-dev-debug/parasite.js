@@ -223,16 +223,44 @@ AreaView.prototype = {
 };
 var Atlas = function(s) {
 	this.scene = s;
-	var res = hxd_Res.load("graphics/male" + Const.TILE_SIZE + ".png").toTile();
-	this.maleAtlas = res.grid(Const.TILE_SIZE);
-	var res1 = hxd_Res.load("graphics/female" + Const.TILE_SIZE + ".png").toTile();
-	this.femaleAtlas = res1.grid(Const.TILE_SIZE);
+	var res = hxd_Res.load("graphics/male" + Const.TILE_SIZE_CLEAN + ".png").toTile();
+	this.maleAtlas = res.grid(Const.TILE_SIZE_CLEAN);
+	var res1 = hxd_Res.load("graphics/female" + Const.TILE_SIZE_CLEAN + ".png").toTile();
+	this.femaleAtlas = res1.grid(Const.TILE_SIZE_CLEAN);
 	var maleEmpty = 8;
 	var _g1 = 0;
 	var _g = maleEmpty;
 	while(_g1 < _g) {
 		var i = _g1++;
 		this.maleAtlas[9 - i][this.maleAtlas[0].length - 1] = null;
+	}
+	if(this.scene.game.config.mapScale != 1) {
+		var _g11 = 0;
+		var _g2 = this.maleAtlas.length;
+		while(_g11 < _g2) {
+			var i1 = _g11++;
+			var _g3 = 0;
+			var _g21 = this.maleAtlas[i1].length;
+			while(_g3 < _g21) {
+				var j = _g3++;
+				if(this.maleAtlas[i1][j] != null) {
+					this.maleAtlas[i1][j].scaleToSize(Const.TILE_SIZE,Const.TILE_SIZE);
+				}
+			}
+		}
+		var _g12 = 0;
+		var _g4 = this.femaleAtlas.length;
+		while(_g12 < _g4) {
+			var i2 = _g12++;
+			var _g31 = 0;
+			var _g22 = this.femaleAtlas[i2].length;
+			while(_g31 < _g22) {
+				var j1 = _g31++;
+				if(this.femaleAtlas[i2][j1] != null) {
+					this.femaleAtlas[i2][j1].scaleToSize(Const.TILE_SIZE,Const.TILE_SIZE);
+				}
+			}
+		}
 	}
 	this.specialAtlas = new haxe_ds_StringMap();
 	var key = Atlas.specials.keys();
@@ -241,10 +269,10 @@ var Atlas = function(s) {
 		var tmp = [];
 		var _this = Atlas.specials;
 		var list = __map_reserved[key1] != null ? _this.getReserved(key1) : _this.h[key1];
-		var _g2 = 0;
-		while(_g2 < list.length) {
-			var tpl = list[_g2];
-			++_g2;
+		var _g5 = 0;
+		while(_g5 < list.length) {
+			var tpl = list[_g5];
+			++_g5;
 			tmp.push(this.maleAtlas[tpl.x][tpl.y]);
 			this.maleAtlas[tpl.x][tpl.y] = null;
 		}
@@ -257,11 +285,11 @@ var Atlas = function(s) {
 	}
 	var tile = hxd_Res.load("graphics/interface.png").toTile();
 	this.interfaceAtlas = new haxe_ds_StringMap();
-	var _g3 = 0;
-	var _g11 = Atlas.interfaceDefs;
-	while(_g3 < _g11.length) {
-		var def = _g11[_g3];
-		++_g3;
+	var _g6 = 0;
+	var _g13 = Atlas.interfaceDefs;
+	while(_g6 < _g13.length) {
+		var def = _g13[_g6];
+		++_g6;
 		var this1 = this.interfaceAtlas;
 		var k = def.key;
 		var v = tile.sub(def.x,def.y,def.w,def.h);
@@ -293,13 +321,13 @@ Atlas.prototype = {
 				}
 			}
 			if(tile == null) {
-				haxe_Log.trace("could not find tile for " + type + " " + (isMale == null ? "null" : "" + isMale),{ fileName : "Atlas.hx", lineNumber : 87, className : "Atlas", methodName : "get"});
+				haxe_Log.trace("could not find tile for " + type + " " + (isMale == null ? "null" : "" + isMale),{ fileName : "Atlas.hx", lineNumber : 102, className : "Atlas", methodName : "get"});
 				return null;
 			}
 		} else {
 			var _this = this.specialAtlas;
 			if((__map_reserved[type] != null ? _this.getReserved(type) : _this.h[type]) == null) {
-				haxe_Log.trace("no atlas for type " + type,{ fileName : "Atlas.hx", lineNumber : 98, className : "Atlas", methodName : "get"});
+				haxe_Log.trace("no atlas for type " + type,{ fileName : "Atlas.hx", lineNumber : 113, className : "Atlas", methodName : "get"});
 				return null;
 			}
 			var _this1 = this.specialAtlas;
@@ -329,6 +357,7 @@ var Config = function(g) {
 	this.fontSize = 16;
 	this.fontSizeLarge = 24;
 	this.hudLogLines = 4;
+	this.mapScale = 1;
 	this.pathDelay = 100;
 	this.windowHeight = 768;
 	this.windowWidth = 1024;
@@ -364,26 +393,32 @@ var Config = function(g) {
 	} else {
 		_this4.h["hudLogLines"] = "4";
 	}
-	var v1 = "" + this.pathDelay;
 	var _this5 = this.map;
-	if(__map_reserved["pathDelay"] != null) {
-		_this5.setReserved("pathDelay",v1);
+	if(__map_reserved["mapScale"] != null) {
+		_this5.setReserved("mapScale","1");
 	} else {
-		_this5.h["pathDelay"] = v1;
+		_this5.h["mapScale"] = "1";
+	}
+	var v1 = "" + this.pathDelay;
+	var _this6 = this.map;
+	if(__map_reserved["pathDelay"] != null) {
+		_this6.setReserved("pathDelay",v1);
+	} else {
+		_this6.h["pathDelay"] = v1;
 	}
 	var v2 = "" + this.windowHeight;
-	var _this6 = this.map;
+	var _this7 = this.map;
 	if(__map_reserved["windowHeight"] != null) {
-		_this6.setReserved("windowHeight",v2);
+		_this7.setReserved("windowHeight",v2);
 	} else {
-		_this6.h["windowHeight"] = v2;
+		_this7.h["windowHeight"] = v2;
 	}
 	var v3 = "" + this.windowWidth;
-	var _this7 = this.map;
+	var _this8 = this.map;
 	if(__map_reserved["windowWidth"] != null) {
-		_this7.setReserved("windowWidth",v3);
+		_this8.setReserved("windowWidth",v3);
 	} else {
-		_this7.h["windowWidth"] = v3;
+		_this8.h["windowWidth"] = v3;
 	}
 	var str = window.localStorage.getItem("config");
 	var obj = { };
@@ -427,6 +462,14 @@ Config.prototype = {
 				v = 10;
 			}
 			this.hudLogLines = v;
+		} else if(key1 == "mapScale") {
+			var v1 = parseFloat(val1);
+			if(v1 < 0.1) {
+				v1 = 0.1;
+			} else if(v1 > 10) {
+				v1 = 10;
+			}
+			this.mapScale = v1;
 		} else if(key1 == "pathDelay") {
 			this.pathDelay = Std.parseInt(val1);
 		} else if(key1 == "windowHeight") {
@@ -471,29 +514,6 @@ Config.prototype = {
 	}
 	,__class__: Config
 };
-var _$PlayerActionType = $hxClasses["_PlayerActionType"] = { __ename__ : true, __constructs__ : ["ACTION_DEBUG","ACTION_AREA","ACTION_REGION","ACTION_OBJECT","ACTION_ORGAN","ACTION_EVOLUTION","ACTION_INVENTORY"] };
-_$PlayerActionType.ACTION_DEBUG = ["ACTION_DEBUG",0];
-_$PlayerActionType.ACTION_DEBUG.toString = $estr;
-_$PlayerActionType.ACTION_DEBUG.__enum__ = _$PlayerActionType;
-_$PlayerActionType.ACTION_AREA = ["ACTION_AREA",1];
-_$PlayerActionType.ACTION_AREA.toString = $estr;
-_$PlayerActionType.ACTION_AREA.__enum__ = _$PlayerActionType;
-_$PlayerActionType.ACTION_REGION = ["ACTION_REGION",2];
-_$PlayerActionType.ACTION_REGION.toString = $estr;
-_$PlayerActionType.ACTION_REGION.__enum__ = _$PlayerActionType;
-_$PlayerActionType.ACTION_OBJECT = ["ACTION_OBJECT",3];
-_$PlayerActionType.ACTION_OBJECT.toString = $estr;
-_$PlayerActionType.ACTION_OBJECT.__enum__ = _$PlayerActionType;
-_$PlayerActionType.ACTION_ORGAN = ["ACTION_ORGAN",4];
-_$PlayerActionType.ACTION_ORGAN.toString = $estr;
-_$PlayerActionType.ACTION_ORGAN.__enum__ = _$PlayerActionType;
-_$PlayerActionType.ACTION_EVOLUTION = ["ACTION_EVOLUTION",5];
-_$PlayerActionType.ACTION_EVOLUTION.toString = $estr;
-_$PlayerActionType.ACTION_EVOLUTION.__enum__ = _$PlayerActionType;
-_$PlayerActionType.ACTION_INVENTORY = ["ACTION_INVENTORY",6];
-_$PlayerActionType.ACTION_INVENTORY.toString = $estr;
-_$PlayerActionType.ACTION_INVENTORY.__enum__ = _$PlayerActionType;
-_$PlayerActionType.__empty_constructs__ = [_$PlayerActionType.ACTION_DEBUG,_$PlayerActionType.ACTION_AREA,_$PlayerActionType.ACTION_REGION,_$PlayerActionType.ACTION_OBJECT,_$PlayerActionType.ACTION_ORGAN,_$PlayerActionType.ACTION_EVOLUTION,_$PlayerActionType.ACTION_INVENTORY];
 var _$TextColor = $hxClasses["_TextColor"] = { __ename__ : true, __constructs__ : ["COLOR_DEFAULT","COLOR_REPEAT","COLOR_DEBUG","COLOR_ALERT","COLOR_EVOLUTION","COLOR_AREA","COLOR_ORGAN","COLOR_WORLD","COLOR_HINT","COLOR_TIMELINE","COLOR_MESSAGE","COLOR_GOAL"] };
 _$TextColor.COLOR_DEFAULT = ["COLOR_DEFAULT",0];
 _$TextColor.COLOR_DEFAULT.toString = $estr;
@@ -535,14 +555,6 @@ _$TextColor.__empty_constructs__ = [_$TextColor.COLOR_DEFAULT,_$TextColor.COLOR_
 var Const = function() { };
 $hxClasses["Const"] = Const;
 Const.__name__ = ["Const"];
-Const.getAction = function(id) {
-	var _this = Const.PLAYER_ACTIONS;
-	if(__map_reserved[id] != null) {
-		return _this.getReserved(id);
-	} else {
-		return _this.h[id];
-	}
-};
 Const.getDistSquared = function(x1,y1,x2,y2) {
 	return (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
 };
@@ -593,7 +605,7 @@ Const.sortFunc = function(a,b) {
 	return 0;
 };
 Const.todo = function(s) {
-	haxe_Log.trace("TODO: " + s,{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+	haxe_Log.trace("TODO: " + s,{ fileName : "Const.hx", lineNumber : 219, className : "Const", methodName : "todo"});
 };
 Const.clamp = function(v,min,max) {
 	if(v < min) {
@@ -624,7 +636,7 @@ Const.p = function(s) {
 	window.console.log(s);
 };
 Const.traceStack = function() {
-	haxe_Log.trace(haxe_CallStack.toString(haxe_CallStack.callStack()),{ fileName : "Const.hx", lineNumber : 304, className : "Const", methodName : "traceStack"});
+	haxe_Log.trace(haxe_CallStack.toString(haxe_CallStack.callStack()),{ fileName : "Const.hx", lineNumber : 280, className : "Const", methodName : "traceStack"});
 };
 var EReg = function(r,opt) {
 	this.r = new RegExp(r,opt.split("u").join(""));
@@ -2477,32 +2489,55 @@ GameScene.__super__ = h2d_Scene;
 GameScene.prototype = $extend(h2d_Scene.prototype,{
 	init: function() {
 		var _gthis = this;
+		if(this.game.config.mapScale != 1) {
+			Const.TILE_SIZE = Const.TILE_SIZE_CLEAN * this.game.config.mapScale | 0;
+		}
 		hxd_Key.ALLOW_KEY_REPEAT = true;
 		this.atlas = new Atlas(this);
-		var res = hxd_Res.load("graphics/entities" + Const.TILE_SIZE + ".png").toTile();
-		this.entityAtlas = res.grid(Const.TILE_SIZE);
-		var res1 = hxd_Res.load("graphics/tileset" + Const.TILE_SIZE + ".png").toTile();
-		this.tileAtlas = res1.gridFlatten(Const.TILE_SIZE);
+		var res = hxd_Res.load("graphics/entities" + Const.TILE_SIZE_CLEAN + ".png").toTile();
+		this.entityAtlas = res.grid(Const.TILE_SIZE_CLEAN);
+		var res1 = hxd_Res.load("graphics/tileset" + Const.TILE_SIZE_CLEAN + ".png").toTile();
+		this.tileAtlas = res1.gridFlatten(Const.TILE_SIZE_CLEAN);
 		var this1 = hxd_Res.get_loader();
 		var ttf = this1.loadCache("font/OrkneyRegular.fnt",hxd_res_BitmapFont);
 		this.font = ttf.toFont();
+		if(this.game.config.mapScale != 1) {
+			var _g = 0;
+			var _g1 = this.tileAtlas;
+			while(_g < _g1.length) {
+				var tile = _g1[_g];
+				++_g;
+				tile.scaleToSize(Const.TILE_SIZE,Const.TILE_SIZE);
+			}
+			var _g11 = 0;
+			var _g2 = this.entityAtlas.length;
+			while(_g11 < _g2) {
+				var i = _g11++;
+				var _g3 = 0;
+				var _g21 = this.entityAtlas[i].length;
+				while(_g3 < _g21) {
+					var j = _g3++;
+					this.entityAtlas[i][j].scaleToSize(Const.TILE_SIZE,Const.TILE_SIZE);
+				}
+			}
+		}
 		this.mouse = new ui_Mouse(this.game);
 		this.hud = new ui_HUD(this.game);
-		var _g = new haxe_ds_EnumValueMap();
-		_g.set(_$UIState.UISTATE_MESSAGE,new ui_Message(this.game));
-		_g.set(_$UIState.UISTATE_DIFFICULTY,new ui_Difficulty(this.game));
-		_g.set(_$UIState.UISTATE_DOCUMENT,new ui_Text(this.game));
-		_g.set(_$UIState.UISTATE_YESNO,new ui_YesNo(this.game));
-		_g.set(_$UIState.UISTATE_GOALS,new ui_Goals(this.game));
-		_g.set(_$UIState.UISTATE_INVENTORY,new ui_Inventory(this.game));
-		_g.set(_$UIState.UISTATE_SKILLS,new ui_Skills(this.game));
-		_g.set(_$UIState.UISTATE_LOG,new ui_Log(this.game));
-		_g.set(_$UIState.UISTATE_TIMELINE,new ui_Timeline(this.game));
-		_g.set(_$UIState.UISTATE_EVOLUTION,new ui_Evolution(this.game));
-		_g.set(_$UIState.UISTATE_ORGANS,new ui_Organs(this.game));
-		_g.set(_$UIState.UISTATE_DEBUG,new ui_Debug(this.game));
-		_g.set(_$UIState.UISTATE_FINISH,new ui_Finish(this.game));
-		this.components = _g;
+		var _g4 = new haxe_ds_EnumValueMap();
+		_g4.set(_$UIState.UISTATE_MESSAGE,new ui_Message(this.game));
+		_g4.set(_$UIState.UISTATE_DIFFICULTY,new ui_Difficulty(this.game));
+		_g4.set(_$UIState.UISTATE_DOCUMENT,new ui_Text(this.game));
+		_g4.set(_$UIState.UISTATE_YESNO,new ui_YesNo(this.game));
+		_g4.set(_$UIState.UISTATE_GOALS,new ui_Goals(this.game));
+		_g4.set(_$UIState.UISTATE_INVENTORY,new ui_Inventory(this.game));
+		_g4.set(_$UIState.UISTATE_SKILLS,new ui_Skills(this.game));
+		_g4.set(_$UIState.UISTATE_LOG,new ui_Log(this.game));
+		_g4.set(_$UIState.UISTATE_TIMELINE,new ui_Timeline(this.game));
+		_g4.set(_$UIState.UISTATE_EVOLUTION,new ui_Evolution(this.game));
+		_g4.set(_$UIState.UISTATE_ORGANS,new ui_Organs(this.game));
+		_g4.set(_$UIState.UISTATE_DEBUG,new ui_Debug(this.game));
+		_g4.set(_$UIState.UISTATE_FINISH,new ui_Finish(this.game));
+		this.components = _g4;
 		this.loseFocus = new ui_LoseFocus(this.game);
 		this.uiLocked = [_$UIState.UISTATE_DIFFICULTY,_$UIState.UISTATE_YESNO,_$UIState.UISTATE_DOCUMENT];
 		this.uiNoClose = [_$UIState.UISTATE_DEFAULT,_$UIState.UISTATE_YESNO,_$UIState.UISTATE_DIFFICULTY];
@@ -2513,11 +2548,11 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 		var ymin = this.cameraTileY2 - this.cameraTileY1;
 		ai_AI.VIEW_DISTANCE = (xmin < ymin ? xmin : ymin) / 2.5 | 0;
 		ai_AI.HEAR_DISTANCE = (xmin < ymin ? xmin : ymin) * 1.5 / 2.5 | 0;
-		if(ai_AI.VIEW_DISTANCE > 10) {
-			ai_AI.VIEW_DISTANCE = 10;
+		if(ai_AI.VIEW_DISTANCE > 6) {
+			ai_AI.VIEW_DISTANCE = 6;
 		}
-		if(ai_AI.HEAR_DISTANCE > 15) {
-			ai_AI.HEAR_DISTANCE = 15;
+		if(ai_AI.HEAR_DISTANCE > 10) {
+			ai_AI.HEAR_DISTANCE = 10;
 		}
 		var _this = this.game;
 		if(_this.config.extendedInfo) {
@@ -2527,6 +2562,8 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 			_gthis.loseFocus.window.set_visible(false);
 		};
 		window.onblur = function() {
+			_gthis.controlPressed = false;
+			_gthis.shiftPressed = false;
 			var _this1 = _gthis.loseFocus;
 			_this1.update();
 			_this1.window.set_visible(true);
@@ -2626,15 +2663,15 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 				_this.update();
 				_this.window.set_visible(true);
 			}
-			if(this._state == _$UIState.UISTATE_MESSAGE) {
-				if(this.game.location == _$LocationType.LOCATION_AREA) {
-					this.game.scene.area.clearPath(true);
-				} else if(this.game.location == _$LocationType.LOCATION_REGION) {
-					this.game.scene.region.clearPath();
-				}
-			}
 			if(this._state != _$UIState.UISTATE_LOG) {
 				this.components.get(this._state).scrollToBegin();
+			}
+		}
+		if(this._state == _$UIState.UISTATE_MESSAGE) {
+			if(this.game.location == _$LocationType.LOCATION_AREA) {
+				this.game.scene.area.clearPath(true);
+			} else if(this.game.location == _$LocationType.LOCATION_REGION) {
+				this.game.scene.region.clearPath(true);
 			}
 		}
 		return this._state;
@@ -2643,7 +2680,7 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 		if(this.game.location == _$LocationType.LOCATION_AREA) {
 			this.game.scene.area.clearPath(true);
 		} else if(this.game.location == _$LocationType.LOCATION_REGION) {
-			this.game.scene.region.clearPath();
+			this.game.scene.region.clearPath(true);
 		}
 	}
 	,get_state: function() {
@@ -2737,31 +2774,31 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 		}
 		var dx = 0;
 		var dy = 0;
-		if(key == 38 || key == 87 || key == 104) {
+		if(key == 38 || key == 104) {
 			dy = -1;
 		}
-		if(key == 40 || key == 88 || key == 98) {
+		if(key == 40 || key == 98) {
 			dy = 1;
 		}
-		if(key == 37 || key == 65 || key == 100) {
+		if(key == 37 || key == 100) {
 			dx = -1;
 		}
-		if(key == 39 || key == 68 || key == 102) {
+		if(key == 39 || key == 102) {
 			dx = 1;
 		}
-		if(key == 81 || key == 103) {
+		if(key == 103) {
 			dx = -1;
 			dy = -1;
 		}
-		if(key == 69 || key == 105) {
+		if(key == 105) {
 			dx = 1;
 			dy = -1;
 		}
-		if(key == 90 || key == 97) {
+		if(key == 97) {
 			dx = -1;
 			dy = 1;
 		}
-		if(key == 67 || key == 99) {
+		if(key == 99) {
 			dx = 1;
 			dy = 1;
 		}
@@ -2798,6 +2835,7 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 				break;
 			}
 		}
+		ret = this.hud.keyAction(key);
 		if(this._state == _$UIState.UISTATE_DEFAULT) {
 			if(key == 101) {
 				this.game.turn();
@@ -2875,8 +2913,8 @@ GameScene.prototype = $extend(h2d_Scene.prototype,{
 			haxe_CallStack.lastException = e;
 			if (e instanceof js__$Boot_HaxeError) e = e.val;
 			var stack = haxe_CallStack.toString(haxe_CallStack.exceptionStack());
-			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 699, className : "GameScene", methodName : "onEvent"});
-			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 700, className : "GameScene", methodName : "onEvent"});
+			haxe_Log.trace("Exception: " + Std.string(e),{ fileName : "GameScene.hx", lineNumber : 714, className : "GameScene", methodName : "onEvent"});
+			haxe_Log.trace(stack,{ fileName : "GameScene.hx", lineNumber : 715, className : "GameScene", methodName : "onEvent"});
 		}
 	}
 	,__class__: GameScene
@@ -3302,17 +3340,6 @@ Reflect.deleteField = function(o,field) {
 	delete(o[field]);
 	return true;
 };
-Reflect.copy = function(o) {
-	var o2 = { };
-	var _g = 0;
-	var _g1 = Reflect.fields(o);
-	while(_g < _g1.length) {
-		var f = _g1[_g];
-		++_g;
-		o2[f] = Reflect.field(o,f);
-	}
-	return o2;
-};
 var RegionView = function(s) {
 	this.scene = s;
 	this.game = this.scene.game;
@@ -3490,7 +3517,10 @@ RegionView.prototype = {
 			}
 		}
 	}
-	,clearPath: function() {
+	,clearPath: function(clearAll) {
+		if(clearAll == null) {
+			clearAll = false;
+		}
 		if(this._path == null) {
 			return;
 		}
@@ -3502,6 +3532,9 @@ RegionView.prototype = {
 			if(dot.parent != null) {
 				dot.parent.removeChild(dot);
 			}
+		}
+		if(clearAll) {
+			this.game.playerRegion.target = null;
 		}
 		this._path = null;
 	}
@@ -4058,7 +4091,7 @@ _$Difficulty.HARD = ["HARD",3];
 _$Difficulty.HARD.toString = $estr;
 _$Difficulty.HARD.__enum__ = _$Difficulty;
 _$Difficulty.__empty_constructs__ = [_$Difficulty.UNSET,_$Difficulty.EASY,_$Difficulty.NORMAL,_$Difficulty.HARD];
-var _$Goal = $hxClasses["_Goal"] = { __ename__ : true, __constructs__ : ["GOAL_TUTORIAL_ALERT","GOAL_TUTORIAL_BODY","GOAL_TUTORIAL_BODY_SEWERS","GOAL_TUTORIAL_ENERGY","GOAL_INVADE_HOST","GOAL_INVADE_HUMAN","GOAL_EVOLVE_PROBE","GOAL_EVOLVE_ORGAN","GOAL_GROW_ORGAN","GOAL_EVOLVE_CAMO","GOAL_GROW_CAMO","GOAL_EVOLVE_DOPAMINE","GOAL_EVOLVE_MICROHABITAT","GOAL_CREATE_HABITAT","GOAL_PUT_BIOMINERAL","GOAL_PUT_ASSIMILATION","GOAL_PROBE_BRAIN","GOAL_LEARN_ITEMS","GOAL_PROBE_BRAIN_ADVANCED","GOAL_LEARN_SKILLS","GOAL_LEARN_SOCIETY","GOAL_TRAVEL_EVENT","GOAL_LEARN_CLUE","GOAL_LEARN_NPC","GOAL_USE_COMPUTER","SCENARIO_ALIEN_FIND_SHIP","SCENARIO_ALIEN_SAVE_ALIEN","SCENARIO_ALIEN_ENTER_SHIP","SCENARIO_ALIEN_MISSION_ABDUCTION","SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP","SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP","SCENARIO_ALIEN_MISSION_INFILTRATION","SCENARIO_ALIEN_MISSION_RESEARCH"] };
+var _$Goal = $hxClasses["_Goal"] = { __ename__ : true, __constructs__ : ["GOAL_TUTORIAL_ALERT","GOAL_TUTORIAL_BODY","GOAL_TUTORIAL_BODY_SEWERS","GOAL_TUTORIAL_ENERGY","GOAL_TUTORIAL_AREA_ALERT","GOAL_INVADE_HOST","GOAL_INVADE_HUMAN","GOAL_EVOLVE_PROBE","GOAL_EVOLVE_ORGAN","GOAL_GROW_ORGAN","GOAL_EVOLVE_CAMO","GOAL_GROW_CAMO","GOAL_EVOLVE_DOPAMINE","GOAL_EVOLVE_MICROHABITAT","GOAL_CREATE_HABITAT","GOAL_PUT_BIOMINERAL","GOAL_PUT_ASSIMILATION","GOAL_PROBE_BRAIN","GOAL_LEARN_ITEMS","GOAL_PROBE_BRAIN_ADVANCED","GOAL_LEARN_SKILLS","GOAL_LEARN_SOCIETY","GOAL_TRAVEL_EVENT","GOAL_LEARN_CLUE","GOAL_LEARN_NPC","GOAL_USE_COMPUTER","SCENARIO_ALIEN_FIND_SHIP","SCENARIO_ALIEN_SAVE_ALIEN","SCENARIO_ALIEN_ENTER_SHIP","SCENARIO_ALIEN_MISSION_ABDUCTION","SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP","SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP","SCENARIO_ALIEN_MISSION_INFILTRATION","SCENARIO_ALIEN_MISSION_RESEARCH"] };
 _$Goal.GOAL_TUTORIAL_ALERT = ["GOAL_TUTORIAL_ALERT",0];
 _$Goal.GOAL_TUTORIAL_ALERT.toString = $estr;
 _$Goal.GOAL_TUTORIAL_ALERT.__enum__ = _$Goal;
@@ -4071,94 +4104,97 @@ _$Goal.GOAL_TUTORIAL_BODY_SEWERS.__enum__ = _$Goal;
 _$Goal.GOAL_TUTORIAL_ENERGY = ["GOAL_TUTORIAL_ENERGY",3];
 _$Goal.GOAL_TUTORIAL_ENERGY.toString = $estr;
 _$Goal.GOAL_TUTORIAL_ENERGY.__enum__ = _$Goal;
-_$Goal.GOAL_INVADE_HOST = ["GOAL_INVADE_HOST",4];
+_$Goal.GOAL_TUTORIAL_AREA_ALERT = ["GOAL_TUTORIAL_AREA_ALERT",4];
+_$Goal.GOAL_TUTORIAL_AREA_ALERT.toString = $estr;
+_$Goal.GOAL_TUTORIAL_AREA_ALERT.__enum__ = _$Goal;
+_$Goal.GOAL_INVADE_HOST = ["GOAL_INVADE_HOST",5];
 _$Goal.GOAL_INVADE_HOST.toString = $estr;
 _$Goal.GOAL_INVADE_HOST.__enum__ = _$Goal;
-_$Goal.GOAL_INVADE_HUMAN = ["GOAL_INVADE_HUMAN",5];
+_$Goal.GOAL_INVADE_HUMAN = ["GOAL_INVADE_HUMAN",6];
 _$Goal.GOAL_INVADE_HUMAN.toString = $estr;
 _$Goal.GOAL_INVADE_HUMAN.__enum__ = _$Goal;
-_$Goal.GOAL_EVOLVE_PROBE = ["GOAL_EVOLVE_PROBE",6];
+_$Goal.GOAL_EVOLVE_PROBE = ["GOAL_EVOLVE_PROBE",7];
 _$Goal.GOAL_EVOLVE_PROBE.toString = $estr;
 _$Goal.GOAL_EVOLVE_PROBE.__enum__ = _$Goal;
-_$Goal.GOAL_EVOLVE_ORGAN = ["GOAL_EVOLVE_ORGAN",7];
+_$Goal.GOAL_EVOLVE_ORGAN = ["GOAL_EVOLVE_ORGAN",8];
 _$Goal.GOAL_EVOLVE_ORGAN.toString = $estr;
 _$Goal.GOAL_EVOLVE_ORGAN.__enum__ = _$Goal;
-_$Goal.GOAL_GROW_ORGAN = ["GOAL_GROW_ORGAN",8];
+_$Goal.GOAL_GROW_ORGAN = ["GOAL_GROW_ORGAN",9];
 _$Goal.GOAL_GROW_ORGAN.toString = $estr;
 _$Goal.GOAL_GROW_ORGAN.__enum__ = _$Goal;
-_$Goal.GOAL_EVOLVE_CAMO = ["GOAL_EVOLVE_CAMO",9];
+_$Goal.GOAL_EVOLVE_CAMO = ["GOAL_EVOLVE_CAMO",10];
 _$Goal.GOAL_EVOLVE_CAMO.toString = $estr;
 _$Goal.GOAL_EVOLVE_CAMO.__enum__ = _$Goal;
-_$Goal.GOAL_GROW_CAMO = ["GOAL_GROW_CAMO",10];
+_$Goal.GOAL_GROW_CAMO = ["GOAL_GROW_CAMO",11];
 _$Goal.GOAL_GROW_CAMO.toString = $estr;
 _$Goal.GOAL_GROW_CAMO.__enum__ = _$Goal;
-_$Goal.GOAL_EVOLVE_DOPAMINE = ["GOAL_EVOLVE_DOPAMINE",11];
+_$Goal.GOAL_EVOLVE_DOPAMINE = ["GOAL_EVOLVE_DOPAMINE",12];
 _$Goal.GOAL_EVOLVE_DOPAMINE.toString = $estr;
 _$Goal.GOAL_EVOLVE_DOPAMINE.__enum__ = _$Goal;
-_$Goal.GOAL_EVOLVE_MICROHABITAT = ["GOAL_EVOLVE_MICROHABITAT",12];
+_$Goal.GOAL_EVOLVE_MICROHABITAT = ["GOAL_EVOLVE_MICROHABITAT",13];
 _$Goal.GOAL_EVOLVE_MICROHABITAT.toString = $estr;
 _$Goal.GOAL_EVOLVE_MICROHABITAT.__enum__ = _$Goal;
-_$Goal.GOAL_CREATE_HABITAT = ["GOAL_CREATE_HABITAT",13];
+_$Goal.GOAL_CREATE_HABITAT = ["GOAL_CREATE_HABITAT",14];
 _$Goal.GOAL_CREATE_HABITAT.toString = $estr;
 _$Goal.GOAL_CREATE_HABITAT.__enum__ = _$Goal;
-_$Goal.GOAL_PUT_BIOMINERAL = ["GOAL_PUT_BIOMINERAL",14];
+_$Goal.GOAL_PUT_BIOMINERAL = ["GOAL_PUT_BIOMINERAL",15];
 _$Goal.GOAL_PUT_BIOMINERAL.toString = $estr;
 _$Goal.GOAL_PUT_BIOMINERAL.__enum__ = _$Goal;
-_$Goal.GOAL_PUT_ASSIMILATION = ["GOAL_PUT_ASSIMILATION",15];
+_$Goal.GOAL_PUT_ASSIMILATION = ["GOAL_PUT_ASSIMILATION",16];
 _$Goal.GOAL_PUT_ASSIMILATION.toString = $estr;
 _$Goal.GOAL_PUT_ASSIMILATION.__enum__ = _$Goal;
-_$Goal.GOAL_PROBE_BRAIN = ["GOAL_PROBE_BRAIN",16];
+_$Goal.GOAL_PROBE_BRAIN = ["GOAL_PROBE_BRAIN",17];
 _$Goal.GOAL_PROBE_BRAIN.toString = $estr;
 _$Goal.GOAL_PROBE_BRAIN.__enum__ = _$Goal;
-_$Goal.GOAL_LEARN_ITEMS = ["GOAL_LEARN_ITEMS",17];
+_$Goal.GOAL_LEARN_ITEMS = ["GOAL_LEARN_ITEMS",18];
 _$Goal.GOAL_LEARN_ITEMS.toString = $estr;
 _$Goal.GOAL_LEARN_ITEMS.__enum__ = _$Goal;
-_$Goal.GOAL_PROBE_BRAIN_ADVANCED = ["GOAL_PROBE_BRAIN_ADVANCED",18];
+_$Goal.GOAL_PROBE_BRAIN_ADVANCED = ["GOAL_PROBE_BRAIN_ADVANCED",19];
 _$Goal.GOAL_PROBE_BRAIN_ADVANCED.toString = $estr;
 _$Goal.GOAL_PROBE_BRAIN_ADVANCED.__enum__ = _$Goal;
-_$Goal.GOAL_LEARN_SKILLS = ["GOAL_LEARN_SKILLS",19];
+_$Goal.GOAL_LEARN_SKILLS = ["GOAL_LEARN_SKILLS",20];
 _$Goal.GOAL_LEARN_SKILLS.toString = $estr;
 _$Goal.GOAL_LEARN_SKILLS.__enum__ = _$Goal;
-_$Goal.GOAL_LEARN_SOCIETY = ["GOAL_LEARN_SOCIETY",20];
+_$Goal.GOAL_LEARN_SOCIETY = ["GOAL_LEARN_SOCIETY",21];
 _$Goal.GOAL_LEARN_SOCIETY.toString = $estr;
 _$Goal.GOAL_LEARN_SOCIETY.__enum__ = _$Goal;
-_$Goal.GOAL_TRAVEL_EVENT = ["GOAL_TRAVEL_EVENT",21];
+_$Goal.GOAL_TRAVEL_EVENT = ["GOAL_TRAVEL_EVENT",22];
 _$Goal.GOAL_TRAVEL_EVENT.toString = $estr;
 _$Goal.GOAL_TRAVEL_EVENT.__enum__ = _$Goal;
-_$Goal.GOAL_LEARN_CLUE = ["GOAL_LEARN_CLUE",22];
+_$Goal.GOAL_LEARN_CLUE = ["GOAL_LEARN_CLUE",23];
 _$Goal.GOAL_LEARN_CLUE.toString = $estr;
 _$Goal.GOAL_LEARN_CLUE.__enum__ = _$Goal;
-_$Goal.GOAL_LEARN_NPC = ["GOAL_LEARN_NPC",23];
+_$Goal.GOAL_LEARN_NPC = ["GOAL_LEARN_NPC",24];
 _$Goal.GOAL_LEARN_NPC.toString = $estr;
 _$Goal.GOAL_LEARN_NPC.__enum__ = _$Goal;
-_$Goal.GOAL_USE_COMPUTER = ["GOAL_USE_COMPUTER",24];
+_$Goal.GOAL_USE_COMPUTER = ["GOAL_USE_COMPUTER",25];
 _$Goal.GOAL_USE_COMPUTER.toString = $estr;
 _$Goal.GOAL_USE_COMPUTER.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_FIND_SHIP = ["SCENARIO_ALIEN_FIND_SHIP",25];
+_$Goal.SCENARIO_ALIEN_FIND_SHIP = ["SCENARIO_ALIEN_FIND_SHIP",26];
 _$Goal.SCENARIO_ALIEN_FIND_SHIP.toString = $estr;
 _$Goal.SCENARIO_ALIEN_FIND_SHIP.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_SAVE_ALIEN = ["SCENARIO_ALIEN_SAVE_ALIEN",26];
+_$Goal.SCENARIO_ALIEN_SAVE_ALIEN = ["SCENARIO_ALIEN_SAVE_ALIEN",27];
 _$Goal.SCENARIO_ALIEN_SAVE_ALIEN.toString = $estr;
 _$Goal.SCENARIO_ALIEN_SAVE_ALIEN.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_ENTER_SHIP = ["SCENARIO_ALIEN_ENTER_SHIP",27];
+_$Goal.SCENARIO_ALIEN_ENTER_SHIP = ["SCENARIO_ALIEN_ENTER_SHIP",28];
 _$Goal.SCENARIO_ALIEN_ENTER_SHIP.toString = $estr;
 _$Goal.SCENARIO_ALIEN_ENTER_SHIP.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION = ["SCENARIO_ALIEN_MISSION_ABDUCTION",28];
+_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION = ["SCENARIO_ALIEN_MISSION_ABDUCTION",29];
 _$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION.toString = $estr;
 _$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP = ["SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP",29];
+_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP = ["SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP",30];
 _$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP.toString = $estr;
 _$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP = ["SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP",30];
+_$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP = ["SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP",31];
 _$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP.toString = $estr;
 _$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION = ["SCENARIO_ALIEN_MISSION_INFILTRATION",31];
+_$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION = ["SCENARIO_ALIEN_MISSION_INFILTRATION",32];
 _$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION.toString = $estr;
 _$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION.__enum__ = _$Goal;
-_$Goal.SCENARIO_ALIEN_MISSION_RESEARCH = ["SCENARIO_ALIEN_MISSION_RESEARCH",32];
+_$Goal.SCENARIO_ALIEN_MISSION_RESEARCH = ["SCENARIO_ALIEN_MISSION_RESEARCH",33];
 _$Goal.SCENARIO_ALIEN_MISSION_RESEARCH.toString = $estr;
 _$Goal.SCENARIO_ALIEN_MISSION_RESEARCH.__enum__ = _$Goal;
-_$Goal.__empty_constructs__ = [_$Goal.GOAL_TUTORIAL_ALERT,_$Goal.GOAL_TUTORIAL_BODY,_$Goal.GOAL_TUTORIAL_BODY_SEWERS,_$Goal.GOAL_TUTORIAL_ENERGY,_$Goal.GOAL_INVADE_HOST,_$Goal.GOAL_INVADE_HUMAN,_$Goal.GOAL_EVOLVE_PROBE,_$Goal.GOAL_EVOLVE_ORGAN,_$Goal.GOAL_GROW_ORGAN,_$Goal.GOAL_EVOLVE_CAMO,_$Goal.GOAL_GROW_CAMO,_$Goal.GOAL_EVOLVE_DOPAMINE,_$Goal.GOAL_EVOLVE_MICROHABITAT,_$Goal.GOAL_CREATE_HABITAT,_$Goal.GOAL_PUT_BIOMINERAL,_$Goal.GOAL_PUT_ASSIMILATION,_$Goal.GOAL_PROBE_BRAIN,_$Goal.GOAL_LEARN_ITEMS,_$Goal.GOAL_PROBE_BRAIN_ADVANCED,_$Goal.GOAL_LEARN_SKILLS,_$Goal.GOAL_LEARN_SOCIETY,_$Goal.GOAL_TRAVEL_EVENT,_$Goal.GOAL_LEARN_CLUE,_$Goal.GOAL_LEARN_NPC,_$Goal.GOAL_USE_COMPUTER,_$Goal.SCENARIO_ALIEN_FIND_SHIP,_$Goal.SCENARIO_ALIEN_SAVE_ALIEN,_$Goal.SCENARIO_ALIEN_ENTER_SHIP,_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION,_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP,_$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP,_$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION,_$Goal.SCENARIO_ALIEN_MISSION_RESEARCH];
+_$Goal.__empty_constructs__ = [_$Goal.GOAL_TUTORIAL_ALERT,_$Goal.GOAL_TUTORIAL_BODY,_$Goal.GOAL_TUTORIAL_BODY_SEWERS,_$Goal.GOAL_TUTORIAL_ENERGY,_$Goal.GOAL_TUTORIAL_AREA_ALERT,_$Goal.GOAL_INVADE_HOST,_$Goal.GOAL_INVADE_HUMAN,_$Goal.GOAL_EVOLVE_PROBE,_$Goal.GOAL_EVOLVE_ORGAN,_$Goal.GOAL_GROW_ORGAN,_$Goal.GOAL_EVOLVE_CAMO,_$Goal.GOAL_GROW_CAMO,_$Goal.GOAL_EVOLVE_DOPAMINE,_$Goal.GOAL_EVOLVE_MICROHABITAT,_$Goal.GOAL_CREATE_HABITAT,_$Goal.GOAL_PUT_BIOMINERAL,_$Goal.GOAL_PUT_ASSIMILATION,_$Goal.GOAL_PROBE_BRAIN,_$Goal.GOAL_LEARN_ITEMS,_$Goal.GOAL_PROBE_BRAIN_ADVANCED,_$Goal.GOAL_LEARN_SKILLS,_$Goal.GOAL_LEARN_SOCIETY,_$Goal.GOAL_TRAVEL_EVENT,_$Goal.GOAL_LEARN_CLUE,_$Goal.GOAL_LEARN_NPC,_$Goal.GOAL_USE_COMPUTER,_$Goal.SCENARIO_ALIEN_FIND_SHIP,_$Goal.SCENARIO_ALIEN_SAVE_ALIEN,_$Goal.SCENARIO_ALIEN_ENTER_SHIP,_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION,_$Goal.SCENARIO_ALIEN_MISSION_ABDUCTION_GO_SPACESHIP,_$Goal.SCENARIO_ALIEN_MISSION_FAILURE_GO_SPACESHIP,_$Goal.SCENARIO_ALIEN_MISSION_INFILTRATION,_$Goal.SCENARIO_ALIEN_MISSION_RESEARCH];
 var _$Improv = $hxClasses["_Improv"] = { __ename__ : true, __constructs__ : ["IMP_HOST_RELEASE","IMP_DECAY_ACCEL","IMP_CAMO_LAYER","IMP_DOPAMINE","IMP_BRAIN_PROBE","IMP_PROT_COVER","IMP_MUSCLE","IMP_WOUND_REGEN","IMP_HEALTH","IMP_ENERGY","IMP_HARDEN_GRIP","IMP_ATTACH","IMP_REINFORCE","IMP_ACID_SPIT","IMP_SLIME_SPIT","IMP_PARALYSIS_SPIT","IMP_PANIC_GAS","IMP_PARALYSIS_GAS","IMP_MICROHABITAT","IMP_BIOMINERAL","IMP_ASSIMILATION"] };
 _$Improv.IMP_HOST_RELEASE = ["IMP_HOST_RELEASE",0];
 _$Improv.IMP_HOST_RELEASE.toString = $estr;
@@ -4249,6 +4285,29 @@ _$Path.PATH_SPECIAL = ["PATH_SPECIAL",4];
 _$Path.PATH_SPECIAL.toString = $estr;
 _$Path.PATH_SPECIAL.__enum__ = _$Path;
 _$Path.__empty_constructs__ = [_$Path.PATH_PROTECTION,_$Path.PATH_ATTACK,_$Path.PATH_CONCEAL,_$Path.PATH_CONTROL,_$Path.PATH_SPECIAL];
+var _$PlayerActionType = $hxClasses["_PlayerActionType"] = { __ename__ : true, __constructs__ : ["ACTION_DEBUG","ACTION_AREA","ACTION_REGION","ACTION_OBJECT","ACTION_ORGAN","ACTION_EVOLUTION","ACTION_INVENTORY"] };
+_$PlayerActionType.ACTION_DEBUG = ["ACTION_DEBUG",0];
+_$PlayerActionType.ACTION_DEBUG.toString = $estr;
+_$PlayerActionType.ACTION_DEBUG.__enum__ = _$PlayerActionType;
+_$PlayerActionType.ACTION_AREA = ["ACTION_AREA",1];
+_$PlayerActionType.ACTION_AREA.toString = $estr;
+_$PlayerActionType.ACTION_AREA.__enum__ = _$PlayerActionType;
+_$PlayerActionType.ACTION_REGION = ["ACTION_REGION",2];
+_$PlayerActionType.ACTION_REGION.toString = $estr;
+_$PlayerActionType.ACTION_REGION.__enum__ = _$PlayerActionType;
+_$PlayerActionType.ACTION_OBJECT = ["ACTION_OBJECT",3];
+_$PlayerActionType.ACTION_OBJECT.toString = $estr;
+_$PlayerActionType.ACTION_OBJECT.__enum__ = _$PlayerActionType;
+_$PlayerActionType.ACTION_ORGAN = ["ACTION_ORGAN",4];
+_$PlayerActionType.ACTION_ORGAN.toString = $estr;
+_$PlayerActionType.ACTION_ORGAN.__enum__ = _$PlayerActionType;
+_$PlayerActionType.ACTION_EVOLUTION = ["ACTION_EVOLUTION",5];
+_$PlayerActionType.ACTION_EVOLUTION.toString = $estr;
+_$PlayerActionType.ACTION_EVOLUTION.__enum__ = _$PlayerActionType;
+_$PlayerActionType.ACTION_INVENTORY = ["ACTION_INVENTORY",6];
+_$PlayerActionType.ACTION_INVENTORY.toString = $estr;
+_$PlayerActionType.ACTION_INVENTORY.__enum__ = _$PlayerActionType;
+_$PlayerActionType.__empty_constructs__ = [_$PlayerActionType.ACTION_DEBUG,_$PlayerActionType.ACTION_AREA,_$PlayerActionType.ACTION_REGION,_$PlayerActionType.ACTION_OBJECT,_$PlayerActionType.ACTION_ORGAN,_$PlayerActionType.ACTION_EVOLUTION,_$PlayerActionType.ACTION_INVENTORY];
 var _$PlayerState = $hxClasses["_PlayerState"] = { __ename__ : true, __constructs__ : ["PLR_STATE_PARASITE","PLR_STATE_ATTACHED","PLR_STATE_HOST"] };
 _$PlayerState.PLR_STATE_PARASITE = ["PLR_STATE_PARASITE",0];
 _$PlayerState.PLR_STATE_PARASITE.toString = $estr;
@@ -4947,7 +5006,7 @@ ai_AI.prototype = {
 				if(_this.game.location == _$LocationType.LOCATION_AREA) {
 					_this.game.scene.area.clearPath(true);
 				} else if(_this.game.location == _$LocationType.LOCATION_REGION) {
-					_this.game.scene.region.clearPath();
+					_this.game.scene.region.clearPath(true);
 				}
 			}
 			this.timers.alert = ai_AI.ALERTED_TIMER;
@@ -6146,33 +6205,12 @@ objects_AreaObject.prototype = {
 	,hide: function() {
 		this.entity.remove();
 	}
-	,addAction: function(id,name,energy) {
-		if(this.game.player.energy >= energy) {
-			this._listActions.add({ id : id, type : _$PlayerActionType.ACTION_OBJECT, name : name, energy : energy, obj : this});
-		}
-	}
-	,addActionFull: function(a) {
-		if(this.game.player.energy >= a.energy) {
-			this._listActions.add(a);
-		}
-	}
-	,addActions: function(tmp) {
-		this._listActions.clear();
-		this.updateActionsList();
-		var _g_head = this._listActions.h;
-		while(_g_head != null) {
-			var val = _g_head.item;
-			_g_head = _g_head.next;
-			var a = val;
-			tmp.add(a);
-		}
-	}
 	,action: function(a) {
 		return this.onAction(a.id);
 	}
 	,turn: function() {
 	}
-	,updateActionsList: function() {
+	,updateActionList: function() {
 	}
 	,onAction: function(id) {
 		return false;
@@ -6191,14 +6229,12 @@ $hxClasses["objects.Pickup"] = objects_Pickup;
 objects_Pickup.__name__ = ["objects","Pickup"];
 objects_Pickup.__super__ = objects_AreaObject;
 objects_Pickup.prototype = $extend(objects_AreaObject.prototype,{
-	updateActionsList: function() {
+	updateActionList: function() {
 		if(this.game.player.state != _$PlayerState.PLR_STATE_HOST) {
 			return;
 		}
 		var tmpname = Lambda.has(this.game.player.knownItems,this.item.info.id) ? this.item.name : this.item.info.unknown;
-		if(this.game.player.energy >= 5) {
-			this._listActions.add({ id : "get", type : _$PlayerActionType.ACTION_OBJECT, name : "Get " + tmpname, energy : 5, obj : this});
-		}
+		this.game.scene.hud.addAction({ id : "get", type : _$PlayerActionType.ACTION_OBJECT, name : "Get " + tmpname, energy : 5, obj : this});
 	}
 	,onAction: function(id) {
 		if(id == "get") {
@@ -10325,7 +10361,7 @@ game_AreaGame.prototype = {
 			level = 0;
 		}
 		if(params.near == null) {
-			haxe_Log.trace("TODO: " + "findLocation near == null",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+			haxe_Log.trace("TODO: " + "findLocation near == null",{ fileName : "Const.hx", lineNumber : 219, className : "Const", methodName : "todo"});
 			return null;
 		}
 		if(params.radius == null) {
@@ -11843,7 +11879,7 @@ game_AreaManager.prototype = {
 			var i = _g1++;
 			var loc = this.get_area().findLocation({ near : { x : e.x, y : e.y}, radius : 5, isUnseen : true});
 			if(loc == null) {
-				haxe_Log.trace("TODO: " + "Could not find free spot for spawn (law)!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+				haxe_Log.trace("TODO: " + "Could not find free spot for spawn (law)!",{ fileName : "Const.hx", lineNumber : 219, className : "Const", methodName : "todo"});
 				return;
 			}
 			var ai1 = null;
@@ -11887,7 +11923,7 @@ game_AreaManager.prototype = {
 			var i = _g++;
 			var loc = this.get_area().findEmptyLocationNear(e.x,e.y,5);
 			if(loc == null) {
-				haxe_Log.trace("TODO: " + "Could not find free spot for spawn (area)!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+				haxe_Log.trace("TODO: " + "Could not find free spot for spawn (area)!",{ fileName : "Const.hx", lineNumber : 219, className : "Const", methodName : "todo"});
 				return;
 			}
 			var ai1 = null;
@@ -11940,7 +11976,7 @@ game_AreaManager.prototype = {
 			if(loc == null) {
 				loc = this.get_area().findEmptyLocationNear(e.x,e.y,5);
 				if(loc == null) {
-					haxe_Log.trace("TODO: " + "Could not find free spot for spawn (team backup)!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+					haxe_Log.trace("TODO: " + "Could not find free spot for spawn (team backup)!",{ fileName : "Const.hx", lineNumber : 219, className : "Const", methodName : "todo"});
 					return;
 				}
 			}
@@ -12855,7 +12891,7 @@ game_EvolutionManager.prototype = {
 			if(path.ep >= const_EvolutionConst.epCostPath[path.level]) {
 				imp = this.openImprov(pathID);
 				if(imp == null) {
-					haxe_Log.trace("TODO: " + "BUG EvolutionManager: You should not be here.",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+					haxe_Log.trace("TODO: " + "BUG EvolutionManager: You should not be here.",{ fileName : "Const.hx", lineNumber : 219, className : "Const", methodName : "todo"});
 					return;
 				}
 				this.player.game.log("Following the " + path.info.name + " direction you now possess the knowledge about " + imp.info.name + ".",_$TextColor.COLOR_EVOLUTION);
@@ -12925,7 +12961,7 @@ game_EvolutionManager.prototype = {
 				if(_this4.game.location == _$LocationType.LOCATION_AREA) {
 					_this4.game.scene.area.clearPath(true);
 				} else if(_this4.game.location == _$LocationType.LOCATION_REGION) {
-					_this4.game.scene.region.clearPath();
+					_this4.game.scene.region.clearPath(true);
 				}
 				_this1.game.log("You host has degraded completely.",null);
 				return;
@@ -13186,7 +13222,7 @@ $hxClasses["game.Game"] = game_Game;
 game_Game.__name__ = ["game","Game"];
 game_Game.prototype = {
 	init: function() {
-		var s = "Parasite v" + "0.5" + " (build: " + "20190408-372" + ")";
+		var s = "Parasite v" + "0.5" + " (build: " + "20190410-376" + ")";
 		this.log(s);
 		this.log("<font face=\"10\">Sinister reflections might shed some light on the nature of perception.</font>",_$TextColor.COLOR_DEBUG);
 		this.turns = 0;
@@ -13854,7 +13890,7 @@ game_Inventory.prototype = {
 			if(this.game.location == _$LocationType.LOCATION_AREA) {
 				this.game.playerArea.postAction();
 			} else {
-				haxe_Log.trace("TODO: " + "Inventory.action() in region mode!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+				haxe_Log.trace("TODO: " + "Inventory.action() in region mode!",{ fileName : "Const.hx", lineNumber : 219, className : "Const", methodName : "todo"});
 			}
 		}
 	}
@@ -14290,7 +14326,7 @@ game_Organs.prototype = {
 		this._list.add(o);
 		return o;
 	}
-	,addActions: function(tmp) {
+	,updateActionList: function() {
 		var _g_head = this._list.h;
 		while(_g_head != null) {
 			var val = _g_head.item;
@@ -14307,7 +14343,7 @@ game_Organs.prototype = {
 				continue;
 			}
 			a.obj = o;
-			tmp.add(a);
+			this.game.scene.hud.addAction(a);
 		}
 	}
 	,areaAction: function(a) {
@@ -14609,7 +14645,7 @@ game_Player.prototype = {
 				if(_this2.game.location == _$LocationType.LOCATION_AREA) {
 					_this2.game.scene.area.clearPath(true);
 				} else if(_this2.game.location == _$LocationType.LOCATION_REGION) {
-					_this2.game.scene.region.clearPath();
+					_this2.game.scene.region.clearPath(true);
 				}
 				this.game.log("Your host has expired. You have to find a new one.",null);
 			} else if(this.host.energy < 0.3 * this.host.maxEnergy && old >= 0.3 * this.host.maxEnergy) {
@@ -14671,7 +14707,7 @@ game_Player.prototype = {
 		if(_this2.game.location == _$LocationType.LOCATION_AREA) {
 			_this2.game.scene.area.clearPath(true);
 		} else if(_this2.game.location == _$LocationType.LOCATION_REGION) {
-			_this2.game.scene.region.clearPath();
+			_this2.game.scene.region.clearPath(true);
 		}
 		this.game.log(msg,null);
 	}
@@ -14761,100 +14797,49 @@ game_PlayerArea.prototype = {
 	,knowsObject: function(id) {
 		return Lambda.has(this.knownObjects,id);
 	}
-	,addActionToList: function(list,id,o) {
-		var action = Const.PLAYER_ACTIONS.get(id);
-		if(action.energy <= this.player.energy) {
-			if(o != null) {
-				var a = Reflect.copy(action);
-				a.obj = o;
-				list.add(a);
-			} else {
-				list.add(action);
-			}
-		}
-	}
-	,getActionList: function() {
-		var tmp = new List();
+	,updateActionList: function() {
 		if(this.get_state() == _$PlayerState.PLR_STATE_PARASITE) {
 			if(this.game.area.hasAI(this.x,this.y)) {
-				var action = Const.PLAYER_ACTIONS.get("attachHost");
-				if(action.energy <= this.player.energy) {
-					tmp.add(action);
-				}
+				this.game.scene.hud.addAction({ id : "attachHost", type : _$PlayerActionType.ACTION_AREA, name : "Attach To Host", energy : 0});
 			}
 		} else if(this.get_state() == _$PlayerState.PLR_STATE_ATTACHED) {
 			if(this.attachHold >= 90) {
-				var action1 = Const.PLAYER_ACTIONS.get("invadeHost");
-				if(action1.energy <= this.player.energy) {
-					tmp.add(action1);
-				}
+				this.game.scene.hud.addAction({ id : "invadeHost", type : _$PlayerActionType.ACTION_AREA, name : "Invade Host", energy : 10});
 			} else {
-				var action2 = Const.PLAYER_ACTIONS.get("hardenGrip");
-				if(action2.energy <= this.player.energy) {
-					tmp.add(action2);
-				}
+				this.game.scene.hud.addAction({ id : "hardenGrip", type : _$PlayerActionType.ACTION_AREA, name : "Harden Grip", energy : 5});
 			}
 		} else if(this.get_state() == _$PlayerState.PLR_STATE_HOST) {
 			if(this.player.hostControl < 100) {
-				var action3 = Const.PLAYER_ACTIONS.get("reinforceControl");
-				if(action3.energy <= this.player.energy) {
-					tmp.add(action3);
-				}
+				this.game.scene.hud.addAction({ id : "reinforceControl", type : _$PlayerActionType.ACTION_AREA, name : "Reinforce Control", energy : 5});
 			}
-			this.player.host.organs.addActions(tmp);
-			var action4 = Const.PLAYER_ACTIONS.get("leaveHost");
-			if(action4.energy <= this.player.energy) {
-				tmp.add(action4);
-			}
+			this.player.host.organs.updateActionList();
+			this.game.scene.hud.addKeyAction({ id : "leaveHost", type : _$PlayerActionType.ACTION_AREA, name : "Leave Host", energy : 0, key : 88});
 		}
 		var imp = this.player.evolutionManager.iterator();
 		while(imp.hasNext()) {
 			var imp1 = imp.next();
 			var info = imp1.info;
 			if(info.action != null) {
-				if(info.action.energy != null && info.action.energy <= this.player.energy) {
-					tmp.add(info.action);
-				} else if(info.action.energyFunc != null) {
-					var e = info.action.energyFunc(this.player);
-					if(e >= 0 && e <= this.player.energy) {
-						tmp.add(info.action);
-					}
-				}
+				this.game.scene.hud.addAction(info.action);
 			}
 		}
 		var olist = this.game.area.getObjectsAt(this.x,this.y);
-		if(olist == null) {
-			return tmp;
-		}
-		if(Lambda.has(this.game.goals._listCompleted,_$Goal.GOAL_PROBE_BRAIN)) {
+		if(olist != null && Lambda.has(this.game.goals._listCompleted,_$Goal.GOAL_PROBE_BRAIN)) {
 			var _g_head = olist.h;
 			while(_g_head != null) {
 				var val = _g_head.item;
 				_g_head = _g_head.next;
 				var o = val;
 				if(this.get_state() == _$PlayerState.PLR_STATE_HOST && !(o.type == "event_object" || Lambda.has(o.game.playerArea.knownObjects,o.type)) && this.player.host.isHuman && o.type != "event_object") {
-					var action5 = Const.PLAYER_ACTIONS.get("learnObject");
-					if(action5.energy <= this.player.energy) {
-						if(o != null) {
-							var a = Reflect.copy(action5);
-							a.obj = o;
-							tmp.add(a);
-						} else {
-							tmp.add(action5);
-						}
-					}
+					this.game.scene.hud.addAction({ id : "learnObject", type : _$PlayerActionType.ACTION_AREA, name : "Learn About Object", energy : 10, obj : o});
 				} else if(o.type == "event_object" || Lambda.has(o.game.playerArea.knownObjects,o.type)) {
-					o.addActions(tmp);
+					o.updateActionList();
 				}
 			}
 		}
 		if(this.get_state() != _$PlayerState.PLR_STATE_ATTACHED && !this.game.area.info.isInhabited) {
-			var action6 = Const.PLAYER_ACTIONS.get("leaveArea");
-			if(action6.energy <= this.player.energy) {
-				tmp.add(action6);
-			}
+			this.game.scene.hud.addAction({ id : "leaveArea", type : _$PlayerActionType.ACTION_AREA, name : "Leave Area", energy : 0});
 		}
-		return tmp;
 	}
 	,action: function(action) {
 		var ret = true;
@@ -14937,7 +14922,7 @@ game_PlayerArea.prototype = {
 			if(_this3.game.location == _$LocationType.LOCATION_AREA) {
 				_this3.game.scene.area.clearPath(true);
 			} else if(_this3.game.location == _$LocationType.LOCATION_REGION) {
-				_this3.game.scene.region.clearPath();
+				_this3.game.scene.region.clearPath(true);
 			}
 			_this.game.log("Your host has expired. You have to find a new one.",null);
 			if(this.game.scene._state != _$UIState.UISTATE_MESSAGE) {
@@ -15390,7 +15375,7 @@ game_PlayerArea.prototype = {
 		if(_this.game.location == _$LocationType.LOCATION_AREA) {
 			_this.game.scene.area.clearPath(true);
 		} else if(_this.game.location == _$LocationType.LOCATION_REGION) {
-			_this.game.scene.region.clearPath();
+			_this.game.scene.region.clearPath(true);
 		}
 		this.player.host.onDamage(damage);
 		if(this.player.host.state == _$AIState.AI_STATE_DEAD) {
@@ -15466,43 +15451,21 @@ game_PlayerRegion.prototype = {
 			_g.set_hostControl(_g.hostControl + 25);
 		}
 	}
-	,addActionToList: function(list,name) {
-		var action = Const.PLAYER_ACTIONS.get(name);
-		if(action.energy <= this.player.energy) {
-			list.add(action);
-		}
-	}
-	,addActionToList2: function(list,action) {
-		if(action.energy <= this.player.energy) {
-			list.add(action);
-		}
-	}
-	,getActionList: function() {
-		var tmp = new List();
+	,updateActionList: function() {
 		if(this.get_currentArea().info.canEnter) {
-			var action = Const.PLAYER_ACTIONS.get("enterArea");
-			if(action.energy <= this.player.energy) {
-				tmp.add(action);
-			}
+			this.game.scene.hud.addAction({ id : "enterArea", type : _$PlayerActionType.ACTION_REGION, name : "Enter Area", energy : 0});
 		}
 		if(this.player.evolutionManager.getLevel(_$Improv.IMP_MICROHABITAT) > 0 && !this.get_currentArea().hasHabitat && this.get_currentArea().info.isInhabited) {
 			var params = this.player.evolutionManager.getParams(_$Improv.IMP_MICROHABITAT);
 			var maxHabitats = params.numHabitats;
 			var numHabitats = this.game.region.getHabitatsCount();
 			if(numHabitats < maxHabitats) {
-				var action1 = { id : "createHabitat", type : _$PlayerActionType.ACTION_REGION, name : "Create habitat", energy : 10};
-				if(action1.energy <= this.player.energy) {
-					tmp.add(action1);
-				}
+				this.game.scene.hud.addAction({ id : "createHabitat", type : _$PlayerActionType.ACTION_REGION, name : "Create habitat", energy : 10});
 			}
 		}
 		if(this.get_currentArea().hasHabitat) {
-			var action2 = { id : "enterHabitat", type : _$PlayerActionType.ACTION_REGION, name : "Enter habitat", energy : 0};
-			if(action2.energy <= this.player.energy) {
-				tmp.add(action2);
-			}
+			this.game.scene.hud.addAction({ id : "enterHabitat", type : _$PlayerActionType.ACTION_REGION, name : "Enter habitat", energy : 0});
 		}
-		return tmp;
 	}
 	,action: function(action) {
 		var ret = true;
@@ -15556,7 +15519,7 @@ game_PlayerRegion.prototype = {
 				if(_this3.game.location == _$LocationType.LOCATION_AREA) {
 					_this3.game.scene.area.clearPath(true);
 				} else if(_this3.game.location == _$LocationType.LOCATION_REGION) {
-					_this3.game.scene.region.clearPath();
+					_this3.game.scene.region.clearPath(true);
 				}
 				_this.game.log("Your host has expired somewhere in the sewers. You have to find a new one.",null);
 				if(this.game.scene._state != _$UIState.UISTATE_MESSAGE) {
@@ -15565,7 +15528,7 @@ game_PlayerRegion.prototype = {
 			}
 		}
 		if(this.player.energy == 0) {
-			haxe_Log.trace("TODO: " + "Zero energy as a result of a region action. Fix this.",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+			haxe_Log.trace("TODO: " + "Zero energy as a result of a region action. Fix this.",{ fileName : "Const.hx", lineNumber : 219, className : "Const", methodName : "todo"});
 		}
 		this.game.scene.hud.update();
 	}
@@ -15637,7 +15600,7 @@ game_PlayerRegion.prototype = {
 				if(_this3.game.location == _$LocationType.LOCATION_AREA) {
 					_this3.game.scene.area.clearPath(true);
 				} else if(_this3.game.location == _$LocationType.LOCATION_REGION) {
-					_this3.game.scene.region.clearPath();
+					_this3.game.scene.region.clearPath(true);
 				}
 				_this.game.log("Your host has expired somewhere in the sewers. You have to find a new one.",null);
 				if(this.game.scene._state != _$UIState.UISTATE_MESSAGE) {
@@ -15652,6 +15615,9 @@ game_PlayerRegion.prototype = {
 	,setTarget: function(destx,desty) {
 		this.target = { x : destx, y : desty};
 		this.nextPath();
+	}
+	,clearPath: function() {
+		this.target = null;
 	}
 	,nextPath: function() {
 		if(this.target == null || (new Date().getTime() / 1000 - this.pathTS) * 1000.0 < this.game.config.pathDelay) {
@@ -15675,7 +15641,7 @@ game_PlayerRegion.prototype = {
 			this.target = null;
 			return true;
 		}
-		if(this.target.x == this.x && this.target.y == this.y) {
+		if(this.target != null && this.target.x == this.x && this.target.y == this.y) {
 			this.target = null;
 		}
 		this.game.scene.mouse.update(true);
@@ -15717,6 +15683,9 @@ game_PlayerRegion.prototype = {
 		this.entity.setPosition(this.x,this.y);
 		this.game.turn();
 		this.game.scene.hud.update();
+		if(this.game.playerRegion.get_currentArea().get_alertness() > 20) {
+			this.game.goals.complete(_$Goal.GOAL_TUTORIAL_AREA_ALERT);
+		}
 		return true;
 	}
 	,get_currentArea: function() {
@@ -15751,6 +15720,9 @@ game_RegionGame.prototype = {
 		this.game.region = this;
 		this.game.scene.region.update();
 		this.game.scene.region.show();
+		if(this.game.playerRegion.get_currentArea().get_alertness() > 20) {
+			this.game.goals.complete(_$Goal.GOAL_TUTORIAL_AREA_ALERT);
+		}
 	}
 	,leave: function() {
 		this.game.log("DEBUG " + "Region.leave()",_$TextColor.COLOR_DEBUG);
@@ -15794,7 +15766,7 @@ game_RegionGame.prototype = {
 				var x = _g3++;
 				s += tmp[x][y];
 			}
-			haxe_Log.trace(s,{ fileName : "RegionGame.hx", lineNumber : 110, className : "game.RegionGame", methodName : "traceTmp"});
+			haxe_Log.trace(s,{ fileName : "RegionGame.hx", lineNumber : 114, className : "game.RegionGame", methodName : "traceTmp"});
 		}
 	}
 	,smoothAdjacentTmp: function(tmp,x,y) {
@@ -16515,7 +16487,7 @@ game_Team.prototype = $extend(game_FSM.prototype,{
 				if(loc == null) {
 					loc = this.game.area.findEmptyLocationNear(x,y,5);
 					if(loc == null) {
-						haxe_Log.trace("TODO: " + "Could not find free spot for spawn x2!",{ fileName : "Const.hx", lineNumber : 243, className : "Const", methodName : "todo"});
+						haxe_Log.trace("TODO: " + "Could not find free spot for spawn x2!",{ fileName : "Const.hx", lineNumber : 219, className : "Const", methodName : "todo"});
 						return;
 					}
 				}
@@ -71165,11 +71137,9 @@ $hxClasses["objects.AssimilationCavity"] = objects_AssimilationCavity;
 objects_AssimilationCavity.__name__ = ["objects","AssimilationCavity"];
 objects_AssimilationCavity.__super__ = objects_HabitatObject;
 objects_AssimilationCavity.prototype = $extend(objects_HabitatObject.prototype,{
-	updateActionsList: function() {
+	updateActionList: function() {
 		if(this.game.player.state == _$PlayerState.PLR_STATE_HOST && !Lambda.has(this.game.player.host.traits,_$AITraitType.TRAIT_ASSIMILATED)) {
-			if(this.game.player.energy >= 0) {
-				this._listActions.add({ id : "assimilate", type : _$PlayerActionType.ACTION_OBJECT, name : "Assimilate Host", energy : 0, obj : this});
-			}
+			this.game.scene.hud.addAction({ id : "assimilate", type : _$PlayerActionType.ACTION_OBJECT, name : "Assimilate Host", energy : 0, obj : this});
 		}
 	}
 	,onAction: function(id) {
@@ -71206,14 +71176,12 @@ $hxClasses["objects.BodyObject"] = objects_BodyObject;
 objects_BodyObject.__name__ = ["objects","BodyObject"];
 objects_BodyObject.__super__ = objects_AreaObject;
 objects_BodyObject.prototype = $extend(objects_AreaObject.prototype,{
-	updateActionsList: function() {
+	updateActionList: function() {
 		if(this.game.player.state != _$PlayerState.PLR_STATE_HOST) {
 			return;
 		}
 		if(!this.isSearched && this.isHumanBody) {
-			if(this.game.player.energy >= 10) {
-				this._listActions.add({ id : "searchBody", type : _$PlayerActionType.ACTION_OBJECT, name : "Search Body", energy : 10, obj : this});
-			}
+			this.game.scene.hud.addAction({ id : "searchBody", type : _$PlayerActionType.ACTION_OBJECT, name : "Search Body", energy : 10, obj : this});
 		}
 		if(this.isSearched) {
 			var item = this.inventory.iterator();
@@ -71223,9 +71191,7 @@ objects_BodyObject.prototype = $extend(objects_AreaObject.prototype,{
 					continue;
 				}
 				var name = Lambda.has(this.game.player.knownItems,item1.id) ? item1.name : item1.info.unknown;
-				if(this.game.player.energy >= 5) {
-					this._listActions.add({ id : "get." + item1.id, type : _$PlayerActionType.ACTION_OBJECT, name : "Get " + name, energy : 5, obj : this});
-				}
+				this.game.scene.hud.addAction({ id : "get." + item1.id, type : _$PlayerActionType.ACTION_OBJECT, name : "Get " + name, energy : 5, obj : this});
 			}
 		}
 	}
@@ -71284,11 +71250,8 @@ $hxClasses["objects.EventObject"] = objects_EventObject;
 objects_EventObject.__name__ = ["objects","EventObject"];
 objects_EventObject.__super__ = objects_AreaObject;
 objects_EventObject.prototype = $extend(objects_AreaObject.prototype,{
-	updateActionsList: function() {
-		var a = this.eventAction;
-		if(this.game.player.energy >= a.energy) {
-			this._listActions.add(a);
-		}
+	updateActionList: function() {
+		this.game.scene.hud.addAction(this.eventAction);
 	}
 	,onAction: function(id) {
 		this.eventOnAction(this.game,this.game.player,id);
@@ -71317,11 +71280,9 @@ $hxClasses["objects.SewerHatch"] = objects_SewerHatch;
 objects_SewerHatch.__name__ = ["objects","SewerHatch"];
 objects_SewerHatch.__super__ = objects_AreaObject;
 objects_SewerHatch.prototype = $extend(objects_AreaObject.prototype,{
-	updateActionsList: function() {
+	updateActionList: function() {
 		if(this.game.player.state != _$PlayerState.PLR_STATE_ATTACHED) {
-			if(this.game.player.energy >= 10) {
-				this._listActions.add({ id : "enterSewers", type : _$PlayerActionType.ACTION_OBJECT, name : "Enter Sewers", energy : 10, obj : this});
-			}
+			this.game.scene.hud.addAction({ id : "enterSewers", type : _$PlayerActionType.ACTION_OBJECT, name : "Enter Sewers", energy : 10, obj : this});
 		}
 	}
 	,onAction: function(id) {
@@ -72772,7 +72733,9 @@ ui_Debug.prototype = $extend(ui_Actions.prototype,{
 		} else if(this.game.location == _$LocationType.LOCATION_REGION) {
 			this.game.debugRegion.action(index);
 		}
-		this.game.scene.closeWindow();
+		if(this.game.scene._state != _$UIState.UISTATE_MESSAGE) {
+			this.game.scene.closeWindow();
+		}
 	}
 	,getText: function() {
 		var buf_b = "";
@@ -73064,6 +73027,7 @@ ui_Goals.prototype = $extend(ui_Text.prototype,{
 var ui_HUD = function(g) {
 	this.game = g;
 	this._listActions = new List();
+	this._listKeyActions = new List();
 	this._container = new h2d_Object();
 	this.game.scene.addChildAt(this._container,Const.LAYER_HUD);
 	this._consoleBack = new h2d_Graphics(this._container);
@@ -73167,14 +73131,53 @@ ui_HUD.prototype = {
 			this.game.playerRegion.action(action);
 		}
 	}
+	,keyAction: function(key) {
+		var action = null;
+		var _g_head = this._listKeyActions.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var a = val;
+			if(a.key == key) {
+				action = a;
+				break;
+			}
+		}
+		if(action == null) {
+			return false;
+		}
+		if(this.game.location == _$LocationType.LOCATION_AREA) {
+			this.game.playerArea.action(action);
+		} else if(this.game.location == _$LocationType.LOCATION_REGION) {
+			this.game.playerRegion.action(action);
+		}
+		return true;
+	}
 	,updateActionList: function() {
 		if(this.game.isFinished) {
 			return;
 		}
+		this._listActions = new List();
+		this._listKeyActions = new List();
 		if(this.game.location == _$LocationType.LOCATION_AREA) {
-			this._listActions = this.game.playerArea.getActionList();
+			this.game.playerArea.updateActionList();
 		} else if(this.game.location == _$LocationType.LOCATION_REGION) {
-			this._listActions = this.game.playerRegion.getActionList();
+			this.game.playerRegion.updateActionList();
+		}
+	}
+	,addAction: function(a) {
+		if(a.energy != null && a.energy <= this.game.player.energy) {
+			this._listActions.add(a);
+		} else if(a.energyFunc != null) {
+			var e = a.energyFunc(this.game.player);
+			if(e >= 0 && e <= this.game.player.energy) {
+				this._listActions.add(a);
+			}
+		}
+	}
+	,addKeyAction: function(a) {
+		if(a.energy <= this.game.player.energy) {
+			this._listKeyActions.add(a);
 		}
 	}
 	,getTextColor: function(val,max) {
@@ -73189,11 +73192,11 @@ ui_HUD.prototype = {
 		var buf_b = "";
 		buf_b += Std.string("Turn: " + this.game.turns + ", at (");
 		if(this.game.location == _$LocationType.LOCATION_AREA) {
-			buf_b += Std.string(this.game.playerArea.x + "," + this.game.playerArea.y + ")" + " A " + Math.round(this.game.area.get_alertness()) + "<br>Actions: " + this.game.playerArea.ap + "<br>");
+			buf_b += Std.string(this.game.playerArea.x + "," + this.game.playerArea.y + ")" + " A " + Math.round(this.game.area.get_alertness()) + "<br/>Actions: " + this.game.playerArea.ap + "<br/>");
 		} else if(this.game.location == _$LocationType.LOCATION_REGION) {
-			buf_b += Std.string(this.game.playerRegion.x + "," + this.game.playerRegion.y + ")" + " A " + Math.round(this.game.playerRegion.get_currentArea().get_alertness()) + "<br>" + this.game.playerRegion.get_currentArea().name + "<br>");
+			buf_b += Std.string(this.game.playerRegion.x + "," + this.game.playerRegion.y + ")" + " A " + Math.round(this.game.playerRegion.get_currentArea().get_alertness()) + "<br/>" + this.game.playerRegion.get_currentArea().name + "<br/>");
 		}
-		buf_b += "===<br>";
+		buf_b += "===<br/>";
 		var colEnergy = this.getTextColor(this.game.player.energy,this.game.player.maxEnergy);
 		var time = this.game.location == _$LocationType.LOCATION_AREA ? 1 : 5;
 		var energy = 0;
@@ -73208,27 +73211,27 @@ ui_HUD.prototype = {
 		}
 		var energyPerTurn = energy;
 		buf_b += Std.string("Energy: " + "<font color='" + colEnergy + "'>" + this.game.player.energy + "</font>" + "/" + this.game.player.maxEnergy);
-		buf_b += Std.string(" [" + (energyPerTurn > 0 ? "+" : "") + energyPerTurn + "/t]<br>");
+		buf_b += Std.string(" [" + (energyPerTurn > 0 ? "+" : "") + energyPerTurn + "/t]<br/>");
 		var colHealth = this.getTextColor(this.game.player.health,this.game.player.maxHealth);
-		buf_b += Std.string("Health: " + "<font color='" + colHealth + "'>" + this.game.player.health + "</font>" + "/" + this.game.player.maxHealth + "<br>");
-		buf_b += "===<br>";
+		buf_b += Std.string("Health: " + "<font color='" + colHealth + "'>" + this.game.player.health + "</font>" + "/" + this.game.player.maxHealth + "<br/>");
+		buf_b += "===<br/>";
 		if(this.game.player.state == _$PlayerState.PLR_STATE_ATTACHED) {
-			buf_b += Std.string("Grip: <font color='" + this.getTextColor(this.game.playerArea.attachHold,100) + "'>" + this.game.playerArea.attachHold + "</font>/100<br>");
+			buf_b += Std.string("Grip: <font color='" + this.getTextColor(this.game.playerArea.attachHold,100) + "'>" + this.game.playerArea.attachHold + "</font>/100<br/>");
 		} else if(this.game.player.state == _$PlayerState.PLR_STATE_HOST) {
 			var _this = this.game.player.host;
 			buf_b += Std.string(_this.isNameKnown ? _this.name.realCapped : _this.name.unknownCapped);
 			if(this.game.player.host.isJobKnown) {
-				buf_b += Std.string(" (" + this.game.player.host.job + ")<br>");
+				buf_b += Std.string(" (" + this.game.player.host.job + ")<br/>");
 			} else {
-				buf_b += "<br>";
+				buf_b += "<br/>";
 			}
 			if(this.game.player.host.isAttrsKnown) {
-				buf_b += Std.string("STR " + this.game.player.host.get_strength() + " CON " + this.game.player.host.get_constitution() + " INT " + this.game.player.host.get_intellect() + " PSY " + this.game.player.host.get_psyche() + "<br>");
+				buf_b += Std.string("STR " + this.game.player.host.get_strength() + " CON " + this.game.player.host.get_constitution() + " INT " + this.game.player.host.get_intellect() + " PSY " + this.game.player.host.get_psyche() + "<br/>");
 			}
 			var colHealth1 = this.getTextColor(this.game.player.host.health,this.game.player.host.maxHealth);
-			buf_b += Std.string("Health: " + "<font color='" + colHealth1 + "'>" + this.game.player.host.health + "</font>" + "/" + this.game.player.host.maxHealth + "<br>");
+			buf_b += Std.string("Health: " + "<font color='" + colHealth1 + "'>" + this.game.player.host.health + "</font>" + "/" + this.game.player.host.maxHealth + "<br/>");
 			var colControl = this.getTextColor(this.game.player.hostControl,100);
-			buf_b += Std.string("Control: " + "<font color='" + colControl + "'>" + this.game.player.hostControl + "</font>" + "/100<br>");
+			buf_b += Std.string("Control: " + "<font color='" + colControl + "'>" + this.game.player.hostControl + "</font>" + "/100<br/>");
 			var colEnergy1 = this.getTextColor(this.game.player.host.energy,this.game.player.host.maxEnergy);
 			var energy1 = 0;
 			if(Lambda.has(_$_$Math.game.player.host.traits,_$AITraitType.TRAIT_ASSIMILATED)) {
@@ -73248,39 +73251,52 @@ ui_HUD.prototype = {
 			}
 			var energyPerTurn1 = energy2;
 			buf_b += Std.string("Energy: <font color='" + colEnergy1 + "'>" + this.game.player.host.energy + "</font>/" + this.game.player.host.maxEnergy);
-			buf_b += Std.string(" [" + (energyPerTurn1 > 0 ? "+" : "") + energyPerTurn1 + "/t]<br>");
-			buf_b += "Evolution direction:<br>  ";
+			buf_b += Std.string(" [" + (energyPerTurn1 > 0 ? "+" : "") + energyPerTurn1 + "/t]<br/>");
+			buf_b += "Evolution direction:<br/>  ";
 			buf_b += Std.string(this.game.player.evolutionManager.getEvolutionDirectionInfo());
-			buf_b += "<br>";
+			buf_b += "<br/>";
 			var str = this.game.player.host.organs.getInfo();
 			if(str != null) {
 				buf_b += str == null ? "null" : "" + str;
 			}
 		}
-		buf_b += "<br>===<br><br>";
+		buf_b += "<br/>===<br/><br/>";
 		var n = 1;
 		if(!this.game.isFinished) {
-			var _g_head = this._listActions.h;
-			while(_g_head != null) {
-				var val = _g_head.item;
-				_g_head = _g_head.next;
-				var action = val;
-				buf_b += Std.string(n + ": ");
-				buf_b += Std.string(action.name);
-				if(action.energy != null && action.energy > 0) {
-					buf_b += Std.string(" (" + action.energy + " energy)");
-				} else if(action.energyFunc != null) {
-					buf_b += Std.string(" (" + action.energyFunc(this.game.player) + " energy)");
+			var list = [this._listActions,this._listKeyActions];
+			var _g = 0;
+			while(_g < list.length) {
+				var l = list[_g];
+				++_g;
+				if(l == this._listKeyActions && n > 1 && this._listKeyActions.length > 0) {
+					buf_b += "<br/>";
 				}
-				if(action != this._listActions.last()) {
-					buf_b += "<br>";
+				var _g1_head = l.h;
+				while(_g1_head != null) {
+					var val = _g1_head.item;
+					_g1_head = _g1_head.next;
+					var action = val;
+					if(action.key != null) {
+						buf_b += Std.string(String.fromCharCode(action.key) + ": ");
+					} else {
+						buf_b += Std.string(n + ": ");
+					}
+					buf_b += Std.string(action.name);
+					if(action.energy != null && action.energy > 0) {
+						buf_b += Std.string(" (" + action.energy + " energy)");
+					} else if(action.energyFunc != null) {
+						buf_b += Std.string(" (" + action.energyFunc(this.game.player) + " energy)");
+					}
+					if(action != l.last()) {
+						buf_b += "<br/>";
+					}
+					++n;
 				}
-				++n;
 			}
 		}
 		if(this.game.isFinished) {
 			buf_b += "<font color=\"#FF0000\">Press ENTER to restart</font>";
-		} else if(this._listActions.length == 0) {
+		} else if(n == 1) {
 			buf_b += "No available actions.";
 		}
 		this._text.set_text(buf_b);
@@ -73383,10 +73399,12 @@ ui_HUD.prototype = {
 	}
 	,update: function() {
 		if(!this.game.isFinished) {
+			this._listActions = new List();
+			this._listKeyActions = new List();
 			if(this.game.location == _$LocationType.LOCATION_AREA) {
-				this._listActions = this.game.playerArea.getActionList();
+				this.game.playerArea.updateActionList();
 			} else if(this.game.location == _$LocationType.LOCATION_REGION) {
-				this._listActions = this.game.playerRegion.getActionList();
+				this.game.playerRegion.updateActionList();
 			}
 		}
 		this.updateWindow();
@@ -73540,12 +73558,13 @@ var ui_Mouse = function(g) {
 	var res = hxd_Res.load("graphics/mouse64.png").toImage();
 	var bmp = res.toBitmap();
 	this.atlas = [];
+	var size = this.game.config.mapScale == 1 ? ui_Mouse.CURSOR_SIZE : ui_Mouse.CURSOR_SIZE * this.game.config.mapScale | 0;
 	var _g1 = 0;
 	var _g = ui_Mouse.CURSOR_ATTACK_RANGED + 1;
 	while(_g1 < _g) {
 		var i = _g1++;
 		var tmp = bmp.sub(i * ui_Mouse.CURSOR_SIZE,0,ui_Mouse.CURSOR_SIZE,ui_Mouse.CURSOR_SIZE);
-		var cursor = hxd_Cursor.Custom(new hxd_CustomCursor([tmp],1,i == 0 ? 0 : 16,i == 0 ? 0 : 16));
+		var cursor = hxd_Cursor.Custom(new hxd_CustomCursor([tmp],1,i == 0 ? 0 : Const.TILE_SIZE / 2 | 0,i == 0 ? 0 : Const.TILE_SIZE / 2 | 0));
 		this.atlas.push(cursor);
 	}
 	hxd_System.setCursor = function(cur) {
@@ -73578,7 +73597,7 @@ ui_Mouse.prototype = {
 	}
 	,onClickDebug: function(pos) {
 		var ai = this.game.area.getAI(pos.x,pos.y);
-		haxe_Log.trace("(" + pos.x + "," + pos.y + ") " + this.game.area.getCellType(pos.x,pos.y) + " " + this.game.area.getCellTypeString(pos.x,pos.y) + " player vis: " + Std.string(this.game.area.isVisible(this.game.playerArea.x,this.game.playerArea.y,pos.x,pos.y,true)) + " walk: " + Std.string(this.game.area.isWalkable(pos.x,pos.y)),{ fileName : "Mouse.hx", lineNumber : 94, className : "ui.Mouse", methodName : "onClickDebug"});
+		haxe_Log.trace("(" + pos.x + "," + pos.y + ") " + this.game.area.getCellType(pos.x,pos.y) + " " + this.game.area.getCellTypeString(pos.x,pos.y) + " player vis: " + Std.string(this.game.area.isVisible(this.game.playerArea.x,this.game.playerArea.y,pos.x,pos.y,true)) + " walk: " + Std.string(this.game.area.isWalkable(pos.x,pos.y)),{ fileName : "Mouse.hx", lineNumber : 106, className : "ui.Mouse", methodName : "onClickDebug"});
 		if(this.game.playerArea.x == pos.x && this.game.playerArea.y == pos.y) {
 			var o = this.game.player;
 			var list = [game_Inventory,game_Skills,game_Organs,game_Effects];
@@ -74220,7 +74239,8 @@ Const.LAYER_PLAYER = 3;
 Const.LAYER_AI = 2;
 Const.LAYER_OBJECT = 1;
 Const.LAYER_TILES = 0;
-Const.TILE_SIZE = 64;
+Const.TILE_SIZE_CLEAN = 64;
+Const.TILE_SIZE = Const.TILE_SIZE_CLEAN;
 Const.TEXT_COLORS = (function($this) {
 	var $r;
 	var _g = new haxe_ds_EnumValueMap();
@@ -74315,100 +74335,6 @@ Const.TILE_WALKABLE = [false,true,false,true,false,false,false,false,false,true,
 Const.TILE_TYPE = ["hidden","ground","building","rock","wall","tree","tree","tree","tree","grass"];
 Const.dirx = [-1,-1,-1,0,0,1,1,1];
 Const.diry = [-1,0,1,-1,1,-1,0,1];
-Const.PLAYER_ACTIONS = (function($this) {
-	var $r;
-	var _g = new haxe_ds_StringMap();
-	{
-		var value = { id : "attachHost", type : _$PlayerActionType.ACTION_AREA, name : "Attach To Host", energy : 0};
-		if(__map_reserved["attachHost"] != null) {
-			_g.setReserved("attachHost",value);
-		} else {
-			_g.h["attachHost"] = value;
-		}
-	}
-	{
-		var value1 = { id : "detach", type : _$PlayerActionType.ACTION_AREA, name : "Detach", energy : 0};
-		if(__map_reserved["detach"] != null) {
-			_g.setReserved("detach",value1);
-		} else {
-			_g.h["detach"] = value1;
-		}
-	}
-	{
-		var value2 = { id : "hardenGrip", type : _$PlayerActionType.ACTION_AREA, name : "Harden Grip", energy : 5};
-		if(__map_reserved["hardenGrip"] != null) {
-			_g.setReserved("hardenGrip",value2);
-		} else {
-			_g.h["hardenGrip"] = value2;
-		}
-	}
-	{
-		var value3 = { id : "invadeHost", type : _$PlayerActionType.ACTION_AREA, name : "Invade Host", energy : 10};
-		if(__map_reserved["invadeHost"] != null) {
-			_g.setReserved("invadeHost",value3);
-		} else {
-			_g.h["invadeHost"] = value3;
-		}
-	}
-	{
-		var value4 = { id : "reinforceControl", type : _$PlayerActionType.ACTION_AREA, name : "Reinforce Control", energy : 5};
-		if(__map_reserved["reinforceControl"] != null) {
-			_g.setReserved("reinforceControl",value4);
-		} else {
-			_g.h["reinforceControl"] = value4;
-		}
-	}
-	{
-		var value5 = { id : "doNothing", type : _$PlayerActionType.ACTION_AREA, name : "Do Nothing", energy : 0};
-		if(__map_reserved["doNothing"] != null) {
-			_g.setReserved("doNothing",value5);
-		} else {
-			_g.h["doNothing"] = value5;
-		}
-	}
-	{
-		var value6 = { id : "leaveHost", type : _$PlayerActionType.ACTION_AREA, name : "Leave Host", energy : 0};
-		if(__map_reserved["leaveHost"] != null) {
-			_g.setReserved("leaveHost",value6);
-		} else {
-			_g.h["leaveHost"] = value6;
-		}
-	}
-	{
-		var value7 = { id : "learnObject", type : _$PlayerActionType.ACTION_AREA, name : "Learn About Object", energy : 10};
-		if(__map_reserved["learnObject"] != null) {
-			_g.setReserved("learnObject",value7);
-		} else {
-			_g.h["learnObject"] = value7;
-		}
-	}
-	{
-		var value8 = { id : "leaveArea", type : _$PlayerActionType.ACTION_AREA, name : "Leave Area", energy : 0};
-		if(__map_reserved["leaveArea"] != null) {
-			_g.setReserved("leaveArea",value8);
-		} else {
-			_g.h["leaveArea"] = value8;
-		}
-	}
-	{
-		var value9 = { id : "move", type : _$PlayerActionType.ACTION_AREA, name : "Movement", energy : 0};
-		if(__map_reserved["move"] != null) {
-			_g.setReserved("move",value9);
-		} else {
-			_g.h["move"] = value9;
-		}
-	}
-	{
-		var value10 = { id : "enterArea", type : _$PlayerActionType.ACTION_REGION, name : "Enter Area", energy : 0};
-		if(__map_reserved["enterArea"] != null) {
-			_g.setReserved("enterArea",value10);
-		} else {
-			_g.h["enterArea"] = value10;
-		}
-	}
-	$r = _g;
-	return $r;
-}(this));
 RegionView.ICON_ALERTNESS = 0;
 RegionView.ICON_EVENT = 1;
 RegionView.ICON_NPC = 2;
@@ -74512,9 +74438,10 @@ const_Goals.map = (function($this) {
 	var $r;
 	var _g = new haxe_ds_EnumValueMap();
 	_g.set(_$Goal.GOAL_TUTORIAL_ALERT,{ id : _$Goal.GOAL_TUTORIAL_ALERT, isHidden : true, isStarting : true, name : "", note : "", messageComplete : "That host is agitated by my appearance, I need to flee to avoid trouble."});
-	_g.set(_$Goal.GOAL_TUTORIAL_BODY,{ id : _$Goal.GOAL_TUTORIAL_BODY, isHidden : true, isStarting : true, name : "", note : "", messageComplete : "This host has expired and its body will be found. Unfortunate."});
-	_g.set(_$Goal.GOAL_TUTORIAL_BODY_SEWERS,{ id : _$Goal.GOAL_TUTORIAL_BODY_SEWERS, isHidden : true, isStarting : true, name : "", note : "", messageComplete : "This host has expired in the sewers and its body will not bring me problems."});
+	_g.set(_$Goal.GOAL_TUTORIAL_BODY,{ id : _$Goal.GOAL_TUTORIAL_BODY, isHidden : true, isStarting : true, name : "", note : "", messageComplete : "This host has expired and its body will be found. Troublesome."});
+	_g.set(_$Goal.GOAL_TUTORIAL_BODY_SEWERS,{ id : _$Goal.GOAL_TUTORIAL_BODY_SEWERS, isHidden : true, isStarting : true, name : "", note : "", messageComplete : "This host has expired in the sewers and its body will not bring problems."});
 	_g.set(_$Goal.GOAL_TUTORIAL_ENERGY,{ id : _$Goal.GOAL_TUTORIAL_ENERGY, isHidden : true, isStarting : true, name : "", note : "", messageComplete : "This host will soon expire, time to look for another one."});
+	_g.set(_$Goal.GOAL_TUTORIAL_AREA_ALERT,{ id : _$Goal.GOAL_TUTORIAL_AREA_ALERT, isHidden : true, isStarting : true, name : "", note : "", messageComplete : "This area is getting dangerous to enter. Better to wait until things calm down."});
 	_g.set(_$Goal.GOAL_INVADE_HOST,{ id : _$Goal.GOAL_INVADE_HOST, isStarting : true, name : "Find and invade a host", note : "You need to find and invade a host or you will die from the lack of energy.", messageComplete : "The bipedal hosts look like a dominant life form. They may be more useful.", onComplete : function(game,player) {
 		game.goals.receive(_$Goal.GOAL_INVADE_HUMAN);
 	}});
